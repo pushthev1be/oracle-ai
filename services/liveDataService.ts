@@ -9,7 +9,7 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
   const matches: Match[] = [];
   
   try {
-    // Fetch football matches from TheSportsDB
+    // Fetch football matches from football-data.org
     const footballMatches = await fetchFootballMatches();
     matches.push(...footballMatches);
     
@@ -29,14 +29,70 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
 
 const fetchFootballMatches = async (): Promise<Match[]> => {
   try {
-    // Using a simpler approach - fetch from a working endpoint
-    // For production, you'd use a sports API like RapidAPI, APIFootball, or similar
-    // This is a fallback that works without authentication
+    const apiKey = process.env.FOOTBALL_DATA_API_KEY || 
+                   (typeof window !== 'undefined' ? (window as any).FOOTBALL_DATA_API_KEY : '');
     
+    if (!apiKey) {
+      console.warn("FOOTBALL_DATA_API_KEY not provided");
+      return [];
+    }
+
+    // Fetch matches from multiple competitions
+    const competitions = ['PL', 'CL', 'SA', 'PD', 'ELC']; // Premier League, Champions League, Serie A, La Liga, Championship
     const matches: Match[] = [];
-    
-    // Since live APIs might have CORS issues, return empty to use mock data
-    // This will trigger fallback to mock data which works reliably
+
+    for (const comp of competitions) {
+      try {
+        const response = await fetch(
+          `https://api.football-data.org/v4/competitions/${comp}/matches?status=SCHEDULED,LIVE`,
+          {
+            method: 'GET',
+            headers: {
+              'X-Auth-Token': apiKey
+            }
+          }
+        );
+
+        if (!response.ok) {
+          console.warn(`Failed to fetch ${comp} matches: ${response.status}`);
+          continue;
+        }
+
+        const data = await response.json();
+
+        if (data.matches && Array.isArray(data.matches)) {
+          const competitionMatches = data.matches.slice(0, 5).map((match: any) => ({
+            id: `m_football_${match.id}`,
+            competition: match.competition?.name || 'Football',
+            homeTeam: {
+              id: `t_${match.homeTeam?.id || 'home'}`,
+              name: match.homeTeam?.name || "Home Team",
+              logo: match.homeTeam?.crest || `https://api.dicebear.com/7.x/identicon/svg?seed=${match.homeTeam?.name}`
+            },
+            awayTeam: {
+              id: `t_${match.awayTeam?.id || 'away'}`,
+              name: match.awayTeam?.name || "Away Team",
+              logo: match.awayTeam?.crest || `https://api.dicebear.com/7.x/identicon/svg?seed=${match.awayTeam?.name}`
+            },
+            date: match.utcDate ? new Date(match.utcDate).toLocaleString() : 'Upcoming',
+            status: determineFootballStatus(match.status),
+            odds: { home: 1.95, away: 1.95, draw: 3.2 },
+            result: match.status === 'FINISHED' ? {
+              homeScore: match.score?.fullTime?.home || 0,
+              awayScore: match.score?.fullTime?.away || 0,
+              scorers: [],
+              playerStats: {}
+            } : undefined,
+            playerMarkets: []
+          }));
+
+          matches.push(...competitionMatches);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${comp} matches:`, error);
+      }
+    }
+
     return matches;
   } catch (error) {
     console.error("Error fetching football matches:", error);
@@ -113,13 +169,17 @@ const fetchTennisMatches = async (): Promise<Match[]> => {
   }
 };
 
-const determineMatchStatus = (event: any): MatchStatus => {
-  if (event.strStatus === 'Match Finished' || event.strStatus === 'Final') {
+const determineMatchStatus = (status: string): MatchStatus => {
+  if (status === 'FINISHED') {
     return MatchStatus.FINISHED;
-  } else if (event.strStatus === 'In Play' || event.strStatus === 'Live') {
+  } else if (status === 'LIVE') {
     return MatchStatus.LIVE;
   }
   return MatchStatus.UPCOMING;
+};
+
+const determineFootballStatus = (status: string): MatchStatus => {
+  return determineMatchStatus(status);
 };
 
 const determineNBAStatus = (status: string): MatchStatus => {
