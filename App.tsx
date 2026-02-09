@@ -9,7 +9,7 @@ import {
   FileText, Users, Zap, ArrowUp, ArrowDown, LayoutDashboard, CheckCircle2, 
   XCircle, TrendingUp, Wallet, Award, Medal, User as UserIcon, RefreshCw, LogOut,
   Newspaper, Twitter, Share2, MessageSquare, Heart, Music, LayoutGrid, Lock, Filter,
-  PlusCircle, MinusCircle, Check, Radio, Info
+  PlusCircle, MinusCircle, Check, Radio, Info, Calendar
 } from 'lucide-react';
 import { getAIAnalysis } from './services/geminiService';
 
@@ -35,7 +35,7 @@ const App: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
-  const [viewMode, setViewMode] = useState<'active' | 'history' | 'dashboard' | 'leaderboard' | 'news'>('active');
+  const [viewMode, setViewMode] = useState<'active' | 'history' | 'dashboard' | 'leaderboard' | 'news' | 'fixtures'>('active');
   const [pastSlips, setPastSlips] = useState<PastSlip[]>([]);
   
   // User Authentication State
@@ -295,6 +295,9 @@ const App: React.FC = () => {
               <button onClick={() => setViewMode('active')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'active' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
                 <LayoutGrid size={20} /> <span className="font-semibold">Lobby</span>
               </button>
+              <button onClick={() => setViewMode('fixtures')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'fixtures' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
+                <Calendar size={20} /> <span className="font-semibold">Fixtures</span>
+              </button>
               <button onClick={() => setViewMode('history')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'history' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
                 <History size={20} /> <span className="font-semibold">Vault</span>
               </button>
@@ -454,6 +457,95 @@ const App: React.FC = () => {
                    </tbody>
                  </table>
                </div>
+            </div>
+          )}
+
+          {viewMode === 'fixtures' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><Calendar className="text-green-500" /> All Fixtures</h2>
+              </div>
+
+              {sports.map(sport => {
+                const sportMatches = matches.filter(m => {
+                  const comp = COMPETITIONS.find(c => c.name === m.competition);
+                  return comp?.sport === sport.type;
+                });
+
+                if (sportMatches.length === 0) return null;
+
+                const matchesByLeague = sportMatches.reduce((acc, match) => {
+                  const league = match.competition;
+                  if (!acc[league]) acc[league] = [];
+                  acc[league].push(match);
+                  return acc;
+                }, {} as Record<string, Match[]>);
+
+                return (
+                  <div key={sport.type} className="space-y-4">
+                    <div className="flex items-center gap-3 px-2">
+                      {sport.icon}
+                      <h3 className="text-lg font-black italic uppercase text-slate-100">{sport.label}</h3>
+                    </div>
+
+                    {Object.entries(matchesByLeague).map(([league, leagueMatches]) => (
+                      <div key={league} className="space-y-3 pl-8">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">{league}</h4>
+                        <div className="space-y-3">
+                          {leagueMatches.map(match => (
+                            <div
+                              key={match.id}
+                              onClick={() => handleSelectMatch(match)}
+                              className={`group bg-slate-900 border ${activeMatch?.id === match.id ? 'border-green-500 ring-4 ring-green-500/10' : 'border-slate-800'} rounded-xl p-4 cursor-pointer transition-all hover:border-slate-700 shadow-lg overflow-hidden relative`}
+                            >
+                              <div className="flex justify-between items-center mb-3">
+                                <div className="flex items-center gap-2 opacity-60 text-[9px] font-black uppercase tracking-tighter">
+                                  <span>{match.date}</span>
+                                  {match.status === MatchStatus.LIVE && (
+                                    <span className="flex items-center gap-1 bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full border border-red-500/20">
+                                      <span className="w-1 h-1 bg-red-500 rounded-full animate-pulse" />
+                                      LIVE
+                                    </span>
+                                  )}
+                                  {match.status === MatchStatus.FINISHED && (
+                                    <span className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full text-[8px]">
+                                      FINISHED
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex-1 text-center">
+                                  <img src={match.homeTeam.logo} className="w-10 h-10 mx-auto mb-1 rounded-full border border-slate-800 bg-slate-950 p-0.5" />
+                                  <p className="font-black text-xs uppercase italic leading-tight">{match.homeTeam.name}</p>
+                                  {match.status === MatchStatus.UPCOMING ? (
+                                    <p className="text-[9px] text-green-500 font-bold mt-1">{match.odds.home.toFixed(2)}</p>
+                                  ) : (
+                                    <p className="text-lg font-black text-white mt-1">{match.result?.homeScore}</p>
+                                  )}
+                                </div>
+
+                                <div className="px-3 text-sm font-black italic text-slate-700">VS</div>
+
+                                <div className="flex-1 text-center">
+                                  <img src={match.awayTeam.logo} className="w-10 h-10 mx-auto mb-1 rounded-full border border-slate-800 bg-slate-950 p-0.5" />
+                                  <p className="font-black text-xs uppercase italic leading-tight">{match.awayTeam.name}</p>
+                                  {match.status === MatchStatus.UPCOMING ? (
+                                    <p className="text-[9px] text-green-500 font-bold mt-1">{match.odds.away.toFixed(2)}</p>
+                                  ) : (
+                                    <p className="text-lg font-black text-white mt-1">{match.result?.awayScore}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
