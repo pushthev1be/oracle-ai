@@ -218,9 +218,18 @@ const App: React.FC = () => {
   const runAnalysis = async () => {
     if (!activeMatch || !user) return;
     setIsLoading(true);
+    setLoadingMsgIdx(0);
     setAiAnalysis(null);
+    
+    // Cycle through loading messages faster
+    const loadingInterval = setInterval(() => {
+      setLoadingMsgIdx(prev => (prev + 1) % LOADING_MESSAGES.length);
+    }, 800);
+    
     try {
       const analysis = await getAIAnalysis(activeMatch, userPrediction, playerProps);
+      clearInterval(loadingInterval);
+      setIsLoading(false);
       setAiAnalysis(analysis);
       
       const newSlip: PastSlip = {
@@ -239,8 +248,8 @@ const App: React.FC = () => {
       localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
       
     } catch (error) {
+      clearInterval(loadingInterval);
       alert("Analysis failed. Check API key.");
-    } finally {
       setIsLoading(false);
     }
   };
