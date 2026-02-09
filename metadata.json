@@ -1,0 +1,7 @@
+{
+  "name": "Oracle Odds AI",
+  "description": "A professional sports prediction platform that leverages Gemini AI and real-time search to analyze matchups, form, and team news for expert betting insights.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
