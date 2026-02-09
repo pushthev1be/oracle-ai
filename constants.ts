@@ -92,6 +92,62 @@ export const MOCK_MATCHES: Match[] = [
     result: { homeScore: 3, awayScore: 3, scorers: [], playerStats: {} }
   },
   {
+    id: 'm_pl3',
+    competition: 'Premier League',
+    homeTeam: { id: 't_tottenham', name: 'Tottenham', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Tottenham' },
+    awayTeam: { id: 't_manchester_utd', name: 'Man United', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=ManUtd' },
+    date: '2024-05-20 15:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 2.20, draw: 3.50, away: 2.80 },
+    playerMarkets: [
+      { player: 'Erling Haaland', type: 'GOALS', line: '1.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Haaland' }
+    ]
+  },
+  {
+    id: 'm_ucl1',
+    competition: 'Champions League',
+    homeTeam: { id: 't_real_madrid', name: 'Real Madrid', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=RealMadrid' },
+    awayTeam: { id: 't_bayern', name: 'Bayern Munich', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Bayern' },
+    date: '2024-05-25 20:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 2.15, draw: 3.40, away: 2.95 },
+    playerMarkets: [
+      { player: 'Kylian Mbappé', type: 'GOALS', line: '0.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mbappe' }
+    ]
+  },
+  {
+    id: 'm_ucl2',
+    competition: 'Champions League',
+    homeTeam: { id: 't_manchester_city', name: 'Manchester City', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=ManCity' },
+    awayTeam: { id: 't_inter', name: 'Inter Milan', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Inter' },
+    date: '2024-05-26 19:30',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.88, draw: 3.60, away: 4.20 },
+    playerMarkets: []
+  },
+  {
+    id: 'm_laliga1',
+    competition: 'La Liga',
+    homeTeam: { id: 't_barcelona', name: 'Barcelona', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Barcelona' },
+    awayTeam: { id: 't_atletico', name: 'Atlético Madrid', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Atletico' },
+    date: '2024-05-22 21:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 2.05, draw: 3.30, away: 3.40 },
+    playerMarkets: [
+      { player: 'Robert Lewandowski', type: 'GOALS', line: '0.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lewa' }
+    ]
+  },
+  {
+    id: 'm_laliga2',
+    competition: 'La Liga',
+    homeTeam: { id: 't_sevilla', name: 'Sevilla', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Sevilla' },
+    awayTeam: { id: 't_villarreal', name: 'Villarreal', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Villarreal' },
+    date: '2024-05-23 19:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.95, draw: 3.40, away: 3.80 },
+    playerMarkets: []
+  },
+  {
     id: 'm_nba1',
     competition: 'NBA',
     homeTeam: { id: 't_lakers', name: 'Lakers', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Lakers' },
@@ -99,5 +155,45 @@ export const MOCK_MATCHES: Match[] = [
     date: 'Tonight, 03:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.95, away: 1.95 }
+  },
+  {
+    id: 'm_nba2',
+    competition: 'NBA',
+    homeTeam: { id: 't_celtics', name: 'Boston Celtics', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Celtics' },
+    awayTeam: { id: 't_heat', name: 'Miami Heat', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Heat' },
+    date: 'Tomorrow, 19:30',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.80, away: 2.10 }
+  },
+  {
+    id: 'm_nba3',
+    competition: 'NBA',
+    homeTeam: { id: 't_bulls', name: 'Chicago Bulls', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Bulls' },
+    awayTeam: { id: 't_nets', name: 'Brooklyn Nets', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Nets' },
+    date: '2024-05-20 01:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.65, away: 2.35 }
+  },
+  {
+    id: 'm_atp1',
+    competition: 'ATP Tour',
+    homeTeam: { id: 't_djokovic', name: 'Novak Djokovic', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Djokovic' },
+    awayTeam: { id: 't_alcaraz', name: 'Carlos Alcaraz', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alcaraz' },
+    date: '2024-05-21 14:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 2.40, away: 1.58 },
+    playerMarkets: [
+      { player: 'Novak Djokovic', type: 'SETS WON', line: '1.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Djokovic' }
+    ]
+  },
+  {
+    id: 'm_atp2',
+    competition: 'ATP Tour',
+    homeTeam: { id: 't_sinner', name: 'Jannik Sinner', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sinner' },
+    awayTeam: { id: 't_medvedev', name: 'Daniil Medvedev', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Medvedev' },
+    date: '2024-05-22 16:30',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.70, away: 2.15 },
+    playerMarkets: []
   }
 ];
