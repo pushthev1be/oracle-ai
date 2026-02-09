@@ -9,9 +9,10 @@ import {
   FileText, Users, Zap, ArrowUp, ArrowDown, LayoutDashboard, CheckCircle2, 
   XCircle, TrendingUp, Wallet, Award, Medal, User as UserIcon, RefreshCw, LogOut,
   Newspaper, Twitter, Share2, MessageSquare, Heart, Music, LayoutGrid, Lock, Filter,
-  PlusCircle, MinusCircle, Check, Radio, Info, Calendar
+  PlusCircle, MinusCircle, Check, Radio, Info, Calendar, Wifi
 } from 'lucide-react';
 import { getAIAnalysis } from './services/geminiService';
+import { fetchLiveMatches } from './services/liveDataService';
 
 const LOADING_MESSAGES = [
   "Scraping live team news...",
@@ -102,6 +103,23 @@ const App: React.FC = () => {
     } else {
       setShowSignUp(true);
     }
+    
+    // Load live data from APIs, fallback to mock data
+    const loadMatches = async () => {
+      try {
+        const liveMatches = await fetchLiveMatches();
+        if (liveMatches && liveMatches.length > 0) {
+          setMatches(liveMatches);
+        } else {
+          setMatches(MOCK_MATCHES);
+        }
+      } catch (error) {
+        console.error("Failed to fetch live matches, using mock data:", error);
+        setMatches(MOCK_MATCHES);
+      }
+    };
+    
+    loadMatches();
   }, []);
 
   // Vault Sync
@@ -321,15 +339,36 @@ const App: React.FC = () => {
         <div className="lg:col-span-6 space-y-6">
           {viewMode === 'active' && (
             <div className="space-y-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col sm:flex-row gap-4">
-                <select value={selectedCompId || ''} onChange={(e) => { setSelectedCompId(e.target.value || null); setSelectedTeam(null); }} className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-green-500 outline-none">
-                  <option value="">All Leagues</option>
-                  {availableComps.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-                <select value={selectedTeam?.id || ''} onChange={(e) => setSelectedTeam(uniqueTeams.find(t => t.id === e.target.value) || null)} className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-green-500 outline-none">
-                  <option value="">All Teams</option>
-                  {uniqueTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col sm:flex-row gap-4 items-end">
+                <div className="flex-1 space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">League</label>
+                  <select value={selectedCompId || ''} onChange={(e) => { setSelectedCompId(e.target.value || null); setSelectedTeam(null); }} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-green-500 outline-none">
+                    <option value="">All Leagues</option>
+                    {availableComps.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Team</label>
+                  <select value={selectedTeam?.id || ''} onChange={(e) => setSelectedTeam(uniqueTeams.find(t => t.id === e.target.value) || null)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-green-500 outline-none">
+                    <option value="">All Teams</option>
+                    {uniqueTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+                <button 
+                  onClick={async () => {
+                    try {
+                      const liveMatches = await fetchLiveMatches();
+                      if (liveMatches && liveMatches.length > 0) {
+                        setMatches(liveMatches);
+                      }
+                    } catch (error) {
+                      console.error("Error refreshing matches:", error);
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl hover:bg-green-500/20 transition-all flex items-center gap-2 font-bold"
+                >
+                  <Wifi size={16} /> <span className="hidden sm:inline">Live</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-1 gap-4">

@@ -65,9 +65,10 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'Liga Portugal',
     homeTeam: { id: 't_sporting', name: 'Sporting CP', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Sporting' },
     awayTeam: { id: 't_benfica', name: 'Benfica', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Benfica' },
-    date: '2024-05-18 20:30',
-    status: MatchStatus.UPCOMING,
+    date: 'Final Score',
+    status: MatchStatus.FINISHED,
     odds: { home: 1.90, draw: 3.50, away: 3.80 },
+    result: { homeScore: 2, awayScore: 0, scorers: [], playerStats: {} },
     playerMarkets: [
       { player: 'Viktor Gyökeres', type: 'GOALS', line: '0.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Viktor' }
     ]
@@ -80,7 +81,7 @@ export const MOCK_MATCHES: Match[] = [
     date: 'Live Now',
     status: MatchStatus.LIVE,
     odds: { home: 1.65, draw: 4.00, away: 5.20 },
-    result: { homeScore: 2, awayScore: 1, scorers: [], playerStats: {} }
+    result: { homeScore: 1, awayScore: 1, scorers: [], playerStats: {} }
   },
   {
     id: 'm_pl2',
@@ -90,7 +91,7 @@ export const MOCK_MATCHES: Match[] = [
     date: 'Full Time',
     status: MatchStatus.FINISHED,
     odds: { home: 2.10, draw: 3.40, away: 2.40 },
-    result: { homeScore: 3, awayScore: 3, scorers: [], playerStats: {} }
+    result: { homeScore: 2, awayScore: 1, scorers: [], playerStats: {} }
   },
   {
     id: 'm_pl3',
@@ -109,9 +110,10 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'Champions League',
     homeTeam: { id: 't_real_madrid', name: 'Real Madrid', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=RealMadrid' },
     awayTeam: { id: 't_bayern', name: 'Bayern Munich', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Bayern' },
-    date: '2024-05-25 20:00',
-    status: MatchStatus.UPCOMING,
+    date: 'Final Score',
+    status: MatchStatus.FINISHED,
     odds: { home: 2.15, draw: 3.40, away: 2.95 },
+    result: { homeScore: 1, awayScore: 0, scorers: [], playerStats: {} },
     playerMarkets: [
       { player: 'Kylian Mbappé', type: 'GOALS', line: '0.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mbappe' }
     ]
@@ -131,9 +133,10 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'La Liga',
     homeTeam: { id: 't_barcelona', name: 'Barcelona', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Barcelona' },
     awayTeam: { id: 't_atletico', name: 'Atlético Madrid', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Atletico' },
-    date: '2024-05-22 21:00',
-    status: MatchStatus.UPCOMING,
+    date: 'Final Score',
+    status: MatchStatus.FINISHED,
     odds: { home: 2.05, draw: 3.30, away: 3.40 },
+    result: { homeScore: 3, awayScore: 2, scorers: [], playerStats: {} },
     playerMarkets: [
       { player: 'Robert Lewandowski', type: 'GOALS', line: '0.5', playerImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lewa' }
     ]
