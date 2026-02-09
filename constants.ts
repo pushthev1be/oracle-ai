@@ -7,6 +7,7 @@ export const COMPETITIONS: Competition[] = [
   { id: 'liga_p', name: 'Liga Portugal', sport: SportType.FOOTBALL },
   { id: 'laliga', name: 'La Liga', sport: SportType.FOOTBALL },
   { id: 'nba', name: 'NBA', sport: SportType.BASKETBALL },
+  { id: 'euroleague', name: 'EuroLeague', sport: SportType.BASKETBALL },
   { id: 'atp', name: 'ATP Tour', sport: SportType.TENNIS },
 ];
 
@@ -173,6 +174,51 @@ export const MOCK_MATCHES: Match[] = [
     date: '2024-05-20 01:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.65, away: 2.35 }
+  },
+  {
+    id: 'm_nba4',
+    competition: 'NBA',
+    homeTeam: { id: 't_mavs', name: 'Dallas Mavericks', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Mavericks' },
+    awayTeam: { id: 't_suns', name: 'Phoenix Suns', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Suns' },
+    date: '2024-05-21 22:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.90, away: 1.98 }
+  },
+  {
+    id: 'm_nba5',
+    competition: 'NBA',
+    homeTeam: { id: 't_nuggets', name: 'Denver Nuggets', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Nuggets' },
+    awayTeam: { id: 't_grizzlies', name: 'Memphis Grizzlies', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Grizzlies' },
+    date: '2024-05-22 20:30',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.75, away: 2.20 }
+  },
+  {
+    id: 'm_euroleague1',
+    competition: 'EuroLeague',
+    homeTeam: { id: 't_real_madrid_bball', name: 'Real Madrid', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=RealMadridBB' },
+    awayTeam: { id: 't_barcelona_bball', name: 'Barcelona', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=BarcelonaBB' },
+    date: '2024-05-20 19:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.88, away: 1.98 }
+  },
+  {
+    id: 'm_euroleague2',
+    competition: 'EuroLeague',
+    homeTeam: { id: 't_olympiacos', name: 'Olympiacos', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Olympiacos' },
+    awayTeam: { id: 't_panathinaikos', name: 'Panathinaikos', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Panathinaikos' },
+    date: '2024-05-21 20:30',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.92, away: 1.92 }
+  },
+  {
+    id: 'm_euroleague3',
+    competition: 'EuroLeague',
+    homeTeam: { id: 't_anadolu_efes', name: 'Anadolu Efes', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Efes' },
+    awayTeam: { id: 't_fenerbahce', name: 'Fenerbahçe', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Fenerbahce' },
+    date: '2024-05-22 18:00',
+    status: MatchStatus.UPCOMING,
+    odds: { home: 1.85, away: 2.05 }
   },
   {
     id: 'm_atp1',
