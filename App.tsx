@@ -104,12 +104,13 @@ const App: React.FC = () => {
       setShowSignUp(true);
     }
     
-    // Load live data from APIs, fallback to mock data
     const loadMatches = async () => {
       try {
         const liveMatches = await fetchLiveMatches();
         if (liveMatches && liveMatches.length > 0) {
-          setMatches(liveMatches);
+          const liveCompetitions = new Set(liveMatches.map(m => m.competition));
+          const keptMocks = MOCK_MATCHES.filter(m => !liveCompetitions.has(m.competition));
+          setMatches([...keptMocks, ...liveMatches]);
         } else {
           setMatches(MOCK_MATCHES);
         }
@@ -359,7 +360,11 @@ const App: React.FC = () => {
                     try {
                       const liveMatches = await fetchLiveMatches();
                       if (liveMatches && liveMatches.length > 0) {
-                        setMatches(liveMatches);
+                        const liveCompetitions = new Set(liveMatches.map(m => m.competition));
+                        setMatches(prev => {
+                          const keptMatches = prev.filter(m => !liveCompetitions.has(m.competition));
+                          return [...keptMatches, ...liveMatches];
+                        });
                       }
                     } catch (error) {
                       console.error("Error refreshing matches:", error);
