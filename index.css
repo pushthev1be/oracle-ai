@@ -1,13 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 * {
-  @apply transition-colors;
+  transition-property: color, background-color, border-color;
+  transition-duration: 150ms;
 }
 
 body {
-  @apply bg-slate-950 text-slate-100 font-sans;
+  background-color: #020617;
+  color: #f1f5f9;
   font-family: 'Inter', sans-serif;
 }
 
@@ -16,9 +16,10 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-slate-900;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-700 rounded-full;
+  background: #334155;
+  border-radius: 9999px;
 }
