@@ -1,20 +1,51 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Oracle Odds AI
 
-# Run and deploy your AI Studio app
+A professional sports prediction platform that leverages Google's Gemini AI and real-time ESPN data to generate expert betting insights across football, basketball, and tennis.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1mZlcrKZ9drQunFNX9mO4_nfI2fccSkkc
+- **Live Data** — Real-time scores and fixtures from ESPN's public API for Premier League, Champions League, La Liga, Liga Portugal, NBA, and ATP Tour
+- **AI Predictions** — Gemini AI analyzes matchups, team form, and current news to generate predicted scores, likely scorers, and reasoning
+- **Player Props** — Select specific player proposition bets (goals, assists, etc.) and get AI-powered analysis
+- **Prediction Vault** — Track your prediction history and performance
+- **Leaderboard** — Compete against other users with win rate and profit rankings
+
+## Demo
+
+See [demo.mp4](demo.mp4) for a walkthrough of the live data integration.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```
+   npm install
+   ```
+2. Create a `.env.local` file and set your Gemini API key:
+   ```
+   GEMINI_API_KEY=your_api_key_here
+   ```
+3. Start the dev server:
+   ```
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000)
+
+## Tech Stack
+
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS v4
+- Google Gemini AI (gemini-2.0-flash)
+- ESPN public API (no auth required)
+
+## Data Sources
+
+| Sport | Source | Leagues |
+|-------|--------|---------|
+| Football | ESPN | Premier League, Champions League, La Liga, Liga Portugal |
+| Basketball | ESPN | NBA (EuroLeague via mock data) |
+| Tennis | ESPN | ATP Tour |
+
+Live data is fetched in parallel. If any endpoint fails, the app gracefully falls back to mock data.
