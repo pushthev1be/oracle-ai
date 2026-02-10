@@ -51,7 +51,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
 
     const response = await Promise.race([
       ai.models.generateContent({
-        model: "gemini-3-flash-preview", 
+        model: "gemini-2.0-flash-exp", 
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
