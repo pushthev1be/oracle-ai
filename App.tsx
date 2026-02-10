@@ -47,35 +47,6 @@ const App: React.FC = () => {
   const [authError, setAuthError] = useState('');
   const [avatarSeed, setAvatarSeed] = useState(Math.random().toString(36).substring(7));
 
-  // Dynamic Status Cycling Simulation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMatches(prevMatches => prevMatches.map(match => {
-        // Simple logic to cycle some matches
-        if (match.status === MatchStatus.UPCOMING && Math.random() > 0.98) {
-          return { ...match, status: MatchStatus.LIVE, date: 'Live Now', result: { homeScore: 0, awayScore: 0, scorers: [], playerStats: {} } };
-        }
-        if (match.status === MatchStatus.LIVE && Math.random() > 0.98) {
-          return { ...match, status: MatchStatus.FINISHED, date: 'Full Time' };
-        }
-        // Update scores for live matches
-        if (match.status === MatchStatus.LIVE && Math.random() > 0.95) {
-          const homeGoal = Math.random() > 0.5;
-          return {
-            ...match,
-            result: {
-              ...match.result!,
-              homeScore: match.result!.homeScore + (homeGoal ? 1 : 0),
-              awayScore: match.result!.awayScore + (homeGoal ? 0 : 1)
-            }
-          };
-        }
-        return match;
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Identity Helpers
   const getGlobalRegistry = (): Record<string, UserProfile> => {
     const reg = localStorage.getItem('oracle_global_registry');

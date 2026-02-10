@@ -2,41 +2,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { Match, AIAnalysis, PlayerProp } from "../types";
 
-// Mock predictions cache for faster responses
-const MOCK_PREDICTIONS: Record<string, AIAnalysis> = {
-  'Arsenal vs Chelsea': {
-    prediction: "Arsenal's attacking prowess should overcome Chelsea's defensive setup. 2-1 home win expected.",
-    scoreline: "2-1",
-    likelyScorers: ["Saka", "Nketiah", "Palmer"],
-    suggestedPlay: "Over 2.5 Goals @ 1.85",
-    reasoning: "Arsenal averaging 2.1 goals/game at home. Chelsea's backline has been vulnerable in recent weeks.",
-    playerPropInsights: "Strong supporting odds for Saka and Nketiah returns.",
-    groundingSources: []
-  },
-  'Liverpool vs Man City': {
-    prediction: "Title deciders usually go to form. Draw most likely given both teams' quality.",
-    scoreline: "2-2",
-    likelyScorers: ["Salah", "Haaland", "Jota", "De Bruyne"],
-    suggestedPlay: "Draw @ 3.40",
-    reasoning: "Head-to-head record shows 4 of last 6 matches ended level. Both teams play attacking football.",
-    playerPropInsights: "Star players should feature prominently in this high-stakes clash.",
-    groundingSources: []
-  }
-};
-
 /**
  * Generates a high-speed sports analysis using the Gemini Flash model with Google Search grounding.
- * Falls back to mock data for instant responses.
  */
 export const getAIAnalysis = async (match: Match, userPrediction: string, playerProps: PlayerProp[]): Promise<AIAnalysis> => {
-  const matchKey = `${match.homeTeam.name} vs ${match.awayTeam.name}`;
-  
-  // Check for cached mock prediction first (instant response)
-  if (MOCK_PREDICTIONS[matchKey]) {
-    return MOCK_PREDICTIONS[matchKey];
-  }
-
-  // Try real API call with timeout for other matches
+  // Try real API call with timeout
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
