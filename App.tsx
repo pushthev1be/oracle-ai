@@ -541,7 +541,7 @@ const App: React.FC = () => {
                       <h3 className="text-lg font-black italic uppercase text-slate-100">{sport.label}</h3>
                     </div>
 
-                    {Object.entries(matchesByLeague).map(([league, leagueMatches]) => (
+                    {(Object.entries(matchesByLeague) as [string, Match[]][]).map(([league, leagueMatches]) => (
                       <div key={league} className="space-y-3 pl-8">
                         <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">{league}</h4>
                         <div className="space-y-3">
