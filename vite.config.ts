@@ -8,6 +8,18 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          '/api/football-data': {
+            target: 'https://api.football-data.org',
+            changeOrigin: true,
+            rewrite: (p: string) => p.replace(/^\/api\/football-data/, ''),
+          },
+          '/api/odds': {
+            target: 'https://api.the-odds-api.com',
+            changeOrigin: true,
+            rewrite: (p: string) => p.replace(/^\/api\/odds/, ''),
+          },
+        },
       },
       plugins: [react()],
       define: {

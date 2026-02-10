@@ -1,8 +1,8 @@
 import { Match, MatchStatus } from "../types";
 
 const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports";
-const FOOTBALL_DATA_BASE = "https://api.football-data.org/v4";
-const ODDS_API_BASE = "https://api.the-odds-api.com/v4";
+const FOOTBALL_DATA_BASE = "/api/football-data/v4";
+const ODDS_API_BASE = "/api/odds/v4";
 
 const FOOTBALL_DATA_API_KEY: string = process.env.FOOTBALL_DATA_API_KEY || "";
 const ODDS_API_KEY: string = process.env.ODDS_API_KEY || "";
