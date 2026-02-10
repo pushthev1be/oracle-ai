@@ -105,7 +105,7 @@ const fetchFootballFromFD = async (oddsMap: Map<string, OddsLookup>): Promise<Ma
     const today = new Date();
     const dateFrom = today.toISOString().split("T")[0];
     const futureDate = new Date(today);
-    futureDate.setDate(futureDate.getDate() + 7);
+    futureDate.setDate(futureDate.getDate() + 14);
     const dateTo = futureDate.toISOString().split("T")[0];
     const res = await fetch(`${FOOTBALL_DATA_BASE}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: { "X-Auth-Token": FOOTBALL_DATA_API_KEY },
