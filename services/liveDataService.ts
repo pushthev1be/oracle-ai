@@ -26,6 +26,9 @@ const ODDS_SPORT_KEYS: { key: string; competition: string }[] = [
 ];
 
 const ESPN_FOOTBALL_FALLBACKS = [
+  { endpoint: "soccer/eng.1", competition: "Premier League" },
+  { endpoint: "soccer/uefa.champions", competition: "Champions League" },
+  { endpoint: "soccer/esp.1", competition: "La Liga" },
   { endpoint: "soccer/por.1", competition: "Liga Portugal" },
 ];
 
