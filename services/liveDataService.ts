@@ -102,7 +102,12 @@ const findOdds = (lookup: OddsLookup | undefined, home: string, away: string, fa
 const fetchFootballFromFD = async (oddsMap: Map<string, OddsLookup>): Promise<Match[]> => {
   if (!FOOTBALL_DATA_API_KEY) return [];
   try {
-    const res = await fetch(`${FOOTBALL_DATA_BASE}/matches`, {
+    const today = new Date();
+    const dateFrom = today.toISOString().split("T")[0];
+    const futureDate = new Date(today);
+    futureDate.setDate(futureDate.getDate() + 7);
+    const dateTo = futureDate.toISOString().split("T")[0];
+    const res = await fetch(`${FOOTBALL_DATA_BASE}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: { "X-Auth-Token": FOOTBALL_DATA_API_KEY },
     });
     if (!res.ok) return [];
