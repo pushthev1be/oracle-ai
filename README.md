@@ -1,51 +1,47 @@
-# Oracle Odds AI
+# Oracle Odds AI 🔮
 
-A professional sports prediction platform that leverages Google's Gemini AI and real-time ESPN data to generate expert betting insights across football, basketball, and tennis.
+A professional-grade sports prediction platform that combines real-time data with **Gemini 2.0 Flash** search-grounding to generate high-accuracy betting insights.
 
-## Features
+## Core Features
 
-- **Live Data** — Real-time scores and fixtures from ESPN's public API for Premier League, Champions League, La Liga, Liga Portugal, NBA, and ATP Tour
-- **AI Predictions** — Gemini AI analyzes matchups, team form, and current news to generate predicted scores, likely scorers, and reasoning
-- **Player Props** — Select specific player proposition bets (goals, assists, etc.) and get AI-powered analysis
-- **Prediction Vault** — Track your prediction history and performance
-- **Leaderboard** — Compete against other users with win rate and profit rankings
+- **Search-Grounded AI** — Uses Google Search Retrieval to verify current team rosters, injury reports, and transfer news (e.g., handles Mbappe/Kane transfers automatically).
+- **Live Match Engine** — Real-time scores and fixtures for Premier League, Champions League, NBA, and ATP Tour via ESPN and Football-Data.org APIs.
+- **Dynamic Prop Analysis** — Input specific player props and get reasoned logic based on the latest 24-hour performance data.
+- **Production-Ready** — Intelligent environment detection for both local development and cloud deployment (Render/Vercel).
 
-## Demo
+## Technical Architecture
 
-See [demo.mp4](demo.mp4) for a walkthrough of the live data integration.
+- **Frontend**: React 19, TypeScript, **Tailwind CSS v4** (Modern aesthetic).
+- **AI Core**: `@google/genai` (Unified SDK) with **Gemini 2.0 Flash**.
+- **Grounding**: Automatic verification via `googleSearch` tool to prevent player hallucinations.
+- **Resilience**: Parallel API fetching with greedy fallback to 2026-aligned mock data.
 
-## Run Locally
+## Deployment & Setup
 
-**Prerequisites:** Node.js
-
-1. Install dependencies:
+### 1. Local Development
+1. `npm install`
+2. Create `.env.local`:
+   ```env
+   VITE_GEMINI_API_KEY=your_key
+   VITE_FOOTBALL_DATA_API_KEY=your_key
+   VITE_ODDS_API_KEY=your_key
    ```
-   npm install
-   ```
-2. Create a `.env.local` file and set your Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-3. Start the dev server:
-   ```
-   npm run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000)
+3. `npm run dev` (Runs at localhost:3000)
 
-## Tech Stack
+### 2. Production (Render)
+Ensure the following **Environment Variables** are added to your Render Dashboard:
+- `VITE_GEMINI_API_KEY`
+- `VITE_FOOTBALL_DATA_API_KEY`
+- `VITE_ODDS_API_KEY`
 
-- React 19 + TypeScript
-- Vite
-- Tailwind CSS v4
-- Google Gemini AI (gemini-2.0-flash)
-- ESPN public API (no auth required)
+## Data Pipeline
 
-## Data Sources
+| Category | API Source | Scope |
+| :--- | :--- | :--- |
+| **Football** | Football-Data.org / ESPN | Top 5 European Leagues + UCL |
+| **Basketball** | ESPN | NBA |
+| **Tennis** | ESPN | ATP Tour |
+| **Grounding** | Google Search | Live news, transfers, and lineups |
 
-| Sport | Source | Leagues |
-|-------|--------|---------|
-| Football | ESPN | Premier League, Champions League, La Liga, Liga Portugal |
-| Basketball | ESPN | NBA (EuroLeague via mock data) |
-| Tennis | ESPN | ATP Tour |
-
-Live data is fetched in parallel. If any endpoint fails, the app gracefully falls back to mock data.
+---
+*Developed for professional bettors and sports enthusiasts who require real-time verification of AI reasoning.*
