@@ -1,11 +1,13 @@
 import { Match, MatchStatus } from "../types";
 
-const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports";
-const FOOTBALL_DATA_BASE = "/api/football-data/v4";
-const ODDS_API_BASE = "/api/odds/v4";
+const isProd = import.meta.env.PROD;
 
-const FOOTBALL_DATA_API_KEY: string = process.env.FOOTBALL_DATA_API_KEY || "";
-const ODDS_API_KEY: string = process.env.ODDS_API_KEY || "";
+const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports";
+const FOOTBALL_DATA_BASE = isProd ? "https://api.football-data.org/v4" : "/api/football-data/v4";
+const ODDS_API_BASE = isProd ? "https://api.the-odds-api.com/v4" : "/api/odds/v4";
+
+const FOOTBALL_DATA_API_KEY: string = (import.meta as any).env.VITE_FOOTBALL_DATA_API_KEY || "";
+const ODDS_API_KEY: string = (import.meta as any).env.VITE_ODDS_API_KEY || "";
 
 const FD_COMPETITION_MAP: Record<string, string> = {
   PL: "Premier League",

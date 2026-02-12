@@ -8,7 +8,10 @@ import { Match, AIAnalysis, PlayerProp } from "../types";
 export const getAIAnalysis = async (match: Match, userPrediction: string, playerProps: PlayerProp[]): Promise<AIAnalysis> => {
   // Try real API call with timeout
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || (import.meta as any).env.VITE_API_KEY;
+    if (!apiKey) throw new Error("Missing Gemini API Key");
+
+    const ai = new GoogleGenAI({ apiKey });
 
     const propsString = playerProps.length > 0
       ? playerProps.map(p => `- ${p.player} to get ${p.value} (${p.type})`).join('\n')
@@ -57,7 +60,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
 
     const response = await Promise.race([
       ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         contents: prompt,
         config: {
           tools: [{ google_search: {} }],
