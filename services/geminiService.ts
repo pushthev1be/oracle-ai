@@ -9,7 +9,8 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
   // Try real API call with timeout
   try {
     const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || (import.meta as any).env.VITE_API_KEY;
-    if (!apiKey) throw new Error("Missing Gemini API Key");
+    console.log("Checking Gemini API Key:", apiKey ? "FOUND (starts with " + apiKey.substring(0, 4) + ")" : "MISSING");
+    if (!apiKey) throw new Error("Missing Gemini API Key in environment variables (VITE_GEMINI_API_KEY)");
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -63,12 +64,12 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
         model: "gemini-2.0-flash",
         contents: prompt,
         config: {
-          tools: [{ google_search: {} }],
+          tools: [{ googleSearch: {} }],
           temperature: 0.1,
         }
       }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("API timeout")), 45000)
+        setTimeout(() => reject(new Error("API timeout (45s)")), 45000)
       )
     ]);
 
@@ -101,14 +102,15 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
   } catch (error) {
     console.error("Oracle Error:", error);
 
-    // Fallback to fast mock response
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
     return {
-      prediction: "Strong form advantage suggests home team should control the match. Expect a competitive fixture.",
-      scoreline: "2-0",
-      likelyScorers: [match.homeTeam.name.split(' ')[0], "Striker Name"],
-      suggestedPlay: "Home Win @ " + match.odds.home.toFixed(2),
-      reasoning: "Home team advantage combined with recent form. " + match.homeTeam.name + " playing at their best.",
-      playerPropInsights: "Key players should feature prominently in attacking positions.",
+      prediction: "Oracle Hub Connection Issue",
+      scoreline: "ERR",
+      likelyScorers: [],
+      suggestedPlay: "Check API Settings",
+      reasoning: `The AI analysis failed with the following error: ${errorMessage}. Please check your Gemini API key and model permissions on Render.`,
+      playerPropInsights: "Detailed insights unavailable due to connection error.",
       groundingSources: []
     };
   }
