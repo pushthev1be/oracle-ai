@@ -34,20 +34,25 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     2. Check the last 3 matches of form for both teams.
     3. Provide an expert verdict on the likely winner or draw.
     4. Predict the exact scoreline.
-    5. Briefly validate if the user's bets/props make sense based on current stats.
-
+    5. DETAILED ANALYSIS of user's bets/props based on current stats and matchups. Do not be brief.
+    
     Format EXACTLY as tags:
     [PREDICTION] summary verdict [/PREDICTION]
     [SCORELINE] 2-1 [/SCORELINE]
     [SCORERS] name1, name2 [/SCORERS]
     [PLAY] specific suggested betting market [/PLAY]
-    [PROP_INSIGHTS] analysis of user picks [/PROP_INSIGHTS]
-    [REASONING] clear core logic with source citations [/REASONING]
+    [PROP_INSIGHTS] detailed analysis of user picks, citing specific stats [/PROP_INSIGHTS]
+    [REASONING] 
+    Provide a comprehensive breakdown. 
+    - Discuss team form and motivation.
+    - Analyze key player matchups.
+    - Explain why the predicted scoreline is likely.
+    [/REASONING]
   `;
 
     // Add timeout to API call
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
     const response = await Promise.race([
       ai.models.generateContent({
@@ -59,7 +64,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
         }
       }),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("API timeout")), 15000)
+        setTimeout(() => reject(new Error("API timeout")), 45000)
       )
     ]);
 

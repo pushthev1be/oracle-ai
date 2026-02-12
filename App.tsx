@@ -3,10 +3,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout';
 import { SportType, Match, PlayerProp, AIAnalysis, PastSlip, PlayerMarket, SlipStatus, MatchStatus, DashboardStats, LeaderboardUser, UserProfile, NewsPost, PlatformType, Team } from './types';
 import { COMPETITIONS, MOCK_MATCHES, MOCK_LEADERBOARD, MOCK_NEWS } from './constants';
-import { 
-  ChevronRight, Search, Dribbble, Flame, CircleDot, Loader2, Target, Sparkles, 
-  ArrowRightCircle, Clock, ExternalLink, Trophy, UserPlus, Trash2, History, 
-  FileText, Users, Zap, ArrowUp, ArrowDown, LayoutDashboard, CheckCircle2, 
+import {
+  ChevronRight, Search, Dribbble, Flame, CircleDot, Loader2, Target, Sparkles,
+  ArrowRightCircle, Clock, ExternalLink, Trophy, UserPlus, Trash2, History,
+  FileText, Users, Zap, ArrowUp, ArrowDown, LayoutDashboard, CheckCircle2,
   XCircle, TrendingUp, Wallet, Award, Medal, User as UserIcon, RefreshCw, LogOut,
   Newspaper, Twitter, Share2, MessageSquare, Heart, Music, LayoutGrid, Lock, Filter,
   PlusCircle, MinusCircle, Check, Radio, Info, Calendar, Wifi
@@ -27,18 +27,18 @@ const App: React.FC = () => {
   const [selectedSport, setSelectedSport] = useState<SportType | null>(SportType.FOOTBALL);
   const [selectedCompId, setSelectedCompId] = useState<string | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  
+
   const [matches, setMatches] = useState<Match[]>(MOCK_MATCHES);
   const [activeMatch, setActiveMatch] = useState<Match | null>(null);
   const [userPrediction, setUserPrediction] = useState<string>('');
   const [playerProps, setPlayerProps] = useState<PlayerProp[]>([]);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const [viewMode, setViewMode] = useState<'active' | 'history' | 'dashboard' | 'leaderboard' | 'news' | 'fixtures'>('active');
   const [pastSlips, setPastSlips] = useState<PastSlip[]>([]);
-  
+
   // User Authentication State
   const [user, setUser] = useState<UserProfile | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
@@ -74,7 +74,7 @@ const App: React.FC = () => {
     } else {
       setShowSignUp(true);
     }
-    
+
     const loadMatches = async () => {
       try {
         const liveMatches = await fetchLiveMatches();
@@ -88,7 +88,7 @@ const App: React.FC = () => {
         setMatches(MOCK_MATCHES);
       }
     };
-    
+
     loadMatches();
   }, []);
 
@@ -208,18 +208,18 @@ const App: React.FC = () => {
     setIsLoading(true);
     setLoadingMsgIdx(0);
     setAiAnalysis(null);
-    
+
     // Cycle through loading messages faster
     const loadingInterval = setInterval(() => {
       setLoadingMsgIdx(prev => (prev + 1) % LOADING_MESSAGES.length);
     }, 800);
-    
+
     try {
       const analysis = await getAIAnalysis(activeMatch, userPrediction, playerProps);
       clearInterval(loadingInterval);
       setIsLoading(false);
       setAiAnalysis(analysis);
-      
+
       const newSlip: PastSlip = {
         id: Math.random().toString(36).substr(2, 9),
         timestamp: Date.now(),
@@ -229,12 +229,12 @@ const App: React.FC = () => {
         analysis,
         status: SlipStatus.PENDING
       };
-      
+
       const updatedHistory = [newSlip, ...pastSlips];
       setPastSlips(updatedHistory);
       const storageKey = `oracle_vault_${user.username.toLowerCase()}`;
       localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
-      
+
     } catch (error) {
       clearInterval(loadingInterval);
       alert("Analysis failed. Check API key.");
@@ -250,8 +250,8 @@ const App: React.FC = () => {
 
   return (
     <Layout user={user} onOpenProfile={() => setShowSignUp(true)}>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-24 lg:pb-0">
+
         {/* Navigation Sidebar */}
         <aside className="lg:col-span-3 space-y-6">
           {user && (
@@ -271,22 +271,22 @@ const App: React.FC = () => {
             </section>
           )}
 
-          <section className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-xl">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Categories</h3>
-            <div className="space-y-2">
+          <section className="bg-slate-900 rounded-2xl p-4 lg:p-5 border border-slate-800 shadow-xl overflow-x-auto">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 lg:mb-4">Categories</h3>
+            <div className="flex lg:flex-col gap-3 lg:gap-2 min-w-max lg:min-w-0">
               {sports.map((s) => (
                 <button
                   key={s.type}
                   onClick={() => { setSelectedSport(s.type); setSelectedCompId(null); setSelectedTeam(null); setViewMode('active'); }}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedSport === s.type ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'hover:bg-slate-800 text-slate-300'}`}
+                  className={`flex items-center gap-3 px-4 py-2 lg:p-3 rounded-xl transition-all whitespace-nowrap ${selectedSport === s.type ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-slate-800/50 lg:bg-transparent text-slate-300 hover:bg-slate-800'}`}
                 >
-                  {s.icon} <span className="font-semibold">{s.label}</span>
+                  {s.icon} <span className="font-semibold text-sm">{s.label}</span>
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-xl">
+          <section className="hidden lg:block bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-xl">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Explorer</h3>
             <div className="space-y-2">
               <button onClick={() => setViewMode('active')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'active' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
@@ -324,7 +324,7 @@ const App: React.FC = () => {
                     {uniqueTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
-                <button 
+                <button
                   onClick={async () => {
                     try {
                       const liveMatches = await fetchLiveMatches();
@@ -412,69 +412,69 @@ const App: React.FC = () => {
 
           {viewMode === 'leaderboard' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="flex items-center justify-between">
-                 <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><Trophy className="text-green-500" /> Hall of Fame</h2>
-                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-900 px-3 py-1 rounded-full border border-slate-800">Updated Real-Time</div>
-               </div>
-               
-               <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                 <table className="w-full text-left border-collapse">
-                   <thead>
-                     <tr className="bg-slate-950/50">
-                       <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">Rank</th>
-                       <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">User</th>
-                       <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
-                         <div className="flex items-center gap-1 group relative cursor-help">
-                           Win Rate <Info size={10} />
-                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[8px] font-bold text-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl border border-slate-700 z-20">
-                             Percentage of successful predictions across all slips.
-                           </div>
-                         </div>
-                       </th>
-                       <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
-                         <div className="flex items-center gap-1 group relative cursor-help">
-                           Streak <Info size={10} />
-                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[8px] font-bold text-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl border border-slate-700 z-20">
-                             Consecutive winning slips in the current active run.
-                           </div>
-                         </div>
-                       </th>
-                       <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
-                         <div className="flex items-center gap-1 group relative cursor-help">
-                           Profit <Info size={10} />
-                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[8px] font-bold text-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl border border-slate-700 z-20">
-                             Net gain in virtual units based on accuracy and odds.
-                           </div>
-                         </div>
-                       </th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     {MOCK_LEADERBOARD.map((u, i) => (
-                       <tr key={u.username} className={`border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors ${i === 0 ? 'bg-green-500/5' : ''}`}>
-                         <td className="p-6">
-                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black italic ${i === 0 ? 'bg-yellow-500 text-slate-950' : i === 1 ? 'bg-slate-400 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
-                              {u.rank}
-                            </span>
-                         </td>
-                         <td className="p-6">
-                           <div className="flex items-center gap-3">
-                             <img src={u.avatar} className="w-10 h-10 rounded-full bg-slate-950 border-2 border-slate-800" />
-                             <span className="font-black italic uppercase text-slate-100 tracking-tighter">{u.username}</span>
-                           </div>
-                         </td>
-                         <td className="p-6 font-black text-green-400">{u.winRate}%</td>
-                         <td className="p-6 font-black text-slate-300">
-                           <span className="flex items-center gap-1">
-                             <Flame size={12} className="text-orange-500" /> {u.streak}
-                           </span>
-                         </td>
-                         <td className="p-6 font-black text-slate-100">+{u.profit} pts</td>
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><Trophy className="text-green-500" /> Hall of Fame</h2>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-900 px-3 py-1 rounded-full border border-slate-800">Updated Real-Time</div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-950/50">
+                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">Rank</th>
+                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">User</th>
+                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
+                        <div className="flex items-center gap-1 group relative cursor-help">
+                          Win Rate <Info size={10} />
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[8px] font-bold text-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl border border-slate-700 z-20">
+                            Percentage of successful predictions across all slips.
+                          </div>
+                        </div>
+                      </th>
+                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
+                        <div className="flex items-center gap-1 group relative cursor-help">
+                          Streak <Info size={10} />
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[8px] font-bold text-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl border border-slate-700 z-20">
+                            Consecutive winning slips in the current active run.
+                          </div>
+                        </div>
+                      </th>
+                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
+                        <div className="flex items-center gap-1 group relative cursor-help">
+                          Profit <Info size={10} />
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[8px] font-bold text-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl border border-slate-700 z-20">
+                            Net gain in virtual units based on accuracy and odds.
+                          </div>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {MOCK_LEADERBOARD.map((u, i) => (
+                      <tr key={u.username} className={`border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors ${i === 0 ? 'bg-green-500/5' : ''}`}>
+                        <td className="p-6">
+                          <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black italic ${i === 0 ? 'bg-yellow-500 text-slate-950' : i === 1 ? 'bg-slate-400 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
+                            {u.rank}
+                          </span>
+                        </td>
+                        <td className="p-6">
+                          <div className="flex items-center gap-3">
+                            <img src={u.avatar} className="w-10 h-10 rounded-full bg-slate-950 border-2 border-slate-800" />
+                            <span className="font-black italic uppercase text-slate-100 tracking-tighter">{u.username}</span>
+                          </div>
+                        </td>
+                        <td className="p-6 font-black text-green-400">{u.winRate}%</td>
+                        <td className="p-6 font-black text-slate-300">
+                          <span className="flex items-center gap-1">
+                            <Flame size={12} className="text-orange-500" /> {u.streak}
+                          </span>
+                        </td>
+                        <td className="p-6 font-black text-slate-100">+{u.profit} pts</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -577,7 +577,7 @@ const App: React.FC = () => {
                   <h4 className="font-black italic uppercase tracking-tighter">BET SLIP</h4>
                   <Zap size={18} fill="currentColor" />
                 </div>
-                
+
                 <div className="p-5 space-y-6">
                   {/* Status Info */}
                   {activeMatch.status !== MatchStatus.UPCOMING && (
@@ -637,7 +637,7 @@ const App: React.FC = () => {
                   )}
 
                   <textarea value={userPrediction} onChange={(e) => setUserPrediction(e.target.value)} placeholder="Personal notes/hunch..." className="w-full h-20 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs focus:border-green-500 outline-none" />
-                  
+
                   <button onClick={runAnalysis} disabled={isLoading} className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter shadow-xl transition-all">
                     {isLoading ? <div className="flex flex-col items-center"><Loader2 className="animate-spin mb-1" size={16} /><span className="text-[8px]">{LOADING_MESSAGES[loadingMsgIdx]}</span></div> : 'ANALYZE SELECTIONS'}
                   </button>
@@ -689,37 +689,56 @@ const App: React.FC = () => {
       {showSignUp && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-xl">
           <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-1.5 bg-green-500" />
-             <div className="text-center mb-10">
-                <div className="relative inline-block mb-6">
-                   <div className="absolute inset-0 bg-green-500/10 blur-3xl rounded-full" />
-                   <img src={currentAvatar} alt="Avatar" className="w-28 h-28 rounded-full border-4 border-slate-800 bg-slate-950 relative z-10 mx-auto" />
-                   {!isUsernameTaken && (
-                     <button onClick={() => setAvatarSeed(Math.random().toString(36).substring(7))} className="absolute bottom-0 right-0 bg-slate-800 border border-slate-700 p-2.5 rounded-full text-slate-400 hover:text-green-500 z-20 shadow-lg transition-all">
-                       <RefreshCw size={14} />
-                     </button>
-                   )}
-                </div>
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-slate-100">{isUsernameTaken ? 'Unlock Vault' : 'New Identity'}</h2>
-                <p className="text-xs font-bold text-slate-500 uppercase mt-2">{isUsernameTaken ? 'Enter PIN to Access Data' : 'Pick a Name and Locked PFP'}</p>
-             </div>
-             <form onSubmit={handleAuth} className="space-y-4">
-                <div className="relative">
-                   <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
-                   <input type="text" value={signUpName} onChange={(e) => { setSignUpName(e.target.value); setAuthError(''); }} placeholder="Username" required className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-sm font-black focus:border-green-500 transition-colors uppercase italic outline-none" />
-                </div>
-                <div className="relative">
-                   <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
-                   <input type="password" value={signUpPin} onChange={(e) => { setSignUpPin(e.target.value); setAuthError(''); }} placeholder="Security PIN (4-Digit)" required maxLength={6} className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-sm font-black focus:border-green-500 transition-colors outline-none" />
-                </div>
-                {authError && <div className="text-red-500 text-[10px] font-black uppercase text-center animate-pulse">{authError}</div>}
-                <button type="submit" className="w-full py-5 bg-green-500 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter hover:bg-green-400 transition-all shadow-[0_0_30px_rgba(34,197,94,0.3)] mt-2">
-                  {isUsernameTaken ? 'Authorize' : 'Initialize'}
-                </button>
-             </form>
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-green-500" />
+            <div className="text-center mb-10">
+              <div className="relative inline-block mb-6">
+                <div className="absolute inset-0 bg-green-500/10 blur-3xl rounded-full" />
+                <img src={currentAvatar} alt="Avatar" className="w-28 h-28 rounded-full border-4 border-slate-800 bg-slate-950 relative z-10 mx-auto" />
+                {!isUsernameTaken && (
+                  <button onClick={() => setAvatarSeed(Math.random().toString(36).substring(7))} className="absolute bottom-0 right-0 bg-slate-800 border border-slate-700 p-2.5 rounded-full text-slate-400 hover:text-green-500 z-20 shadow-lg transition-all">
+                    <RefreshCw size={14} />
+                  </button>
+                )}
+              </div>
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter text-slate-100">{isUsernameTaken ? 'Unlock Vault' : 'New Identity'}</h2>
+              <p className="text-xs font-bold text-slate-500 uppercase mt-2">{isUsernameTaken ? 'Enter PIN to Access Data' : 'Pick a Name and Locked PFP'}</p>
+            </div>
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div className="relative">
+                <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
+                <input type="text" value={signUpName} onChange={(e) => { setSignUpName(e.target.value); setAuthError(''); }} placeholder="Username" required className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-sm font-black focus:border-green-500 transition-colors uppercase italic outline-none" />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
+                <input type="password" value={signUpPin} onChange={(e) => { setSignUpPin(e.target.value); setAuthError(''); }} placeholder="Security PIN (4-Digit)" required maxLength={6} className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-sm font-black focus:border-green-500 transition-colors outline-none" />
+              </div>
+              {authError && <div className="text-red-500 text-[10px] font-black uppercase text-center animate-pulse">{authError}</div>}
+              <button type="submit" className="w-full py-5 bg-green-500 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter hover:bg-green-400 transition-all shadow-[0_0_30px_rgba(34,197,94,0.3)] mt-2">
+                {isUsernameTaken ? 'Authorize' : 'Initialize'}
+              </button>
+            </form>
           </div>
         </div>
       )}
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 w-full bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 p-2 z-50 lg:hidden flex justify-around items-center safe-area-pb">
+        <button onClick={() => setViewMode('active')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'active' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
+          <LayoutGrid size={20} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Lobby</span>
+        </button>
+        <button onClick={() => setViewMode('fixtures')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'fixtures' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
+          <Calendar size={20} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Fixtures</span>
+        </button>
+        <button onClick={() => setViewMode('history')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'history' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
+          <History size={20} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Vault</span>
+        </button>
+        <button onClick={() => setViewMode('leaderboard')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'leaderboard' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
+          <Trophy size={20} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Rank</span>
+        </button>
+      </div>
     </Layout>
   );
 };
