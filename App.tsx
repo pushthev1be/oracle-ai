@@ -313,14 +313,14 @@ const App: React.FC = () => {
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col sm:flex-row gap-4 items-end">
                 <div className="flex-1 space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">League</label>
-                  <select value={selectedCompId || ''} onChange={(e) => { setSelectedCompId(e.target.value || null); setSelectedTeam(null); }} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-green-500 outline-none">
+                  <select value={selectedCompId || ''} onChange={(e) => { setSelectedCompId(e.target.value || null); setSelectedTeam(null); }} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-base font-bold focus:border-green-500 outline-none">
                     <option value="">All Leagues</option>
                     {availableComps.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div className="flex-1 space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Team</label>
-                  <select value={selectedTeam?.id || ''} onChange={(e) => setSelectedTeam(uniqueTeams.find(t => t.id === e.target.value) || null)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-green-500 outline-none">
+                  <select value={selectedTeam?.id || ''} onChange={(e) => setSelectedTeam(uniqueTeams.find(t => t.id === e.target.value) || null)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-base font-bold focus:border-green-500 outline-none">
                     <option value="">All Teams</option>
                     {uniqueTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
@@ -631,11 +631,11 @@ const App: React.FC = () => {
             <form onSubmit={handleAuth} className="space-y-4">
               <div className="relative">
                 <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
-                <input type="text" value={signUpName} onChange={(e) => { setSignUpName(e.target.value); setAuthError(''); }} placeholder="Username" required className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-sm font-black focus:border-green-500 transition-colors uppercase italic outline-none" />
+                <input type="text" value={signUpName} onChange={(e) => { setSignUpName(e.target.value); setAuthError(''); }} placeholder="Username" required className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-base font-black focus:border-green-500 transition-colors uppercase italic outline-none" />
               </div>
               <div className="relative">
                 <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
-                <input type="password" value={signUpPin} onChange={(e) => { setSignUpPin(e.target.value); setAuthError(''); }} placeholder="Security PIN (4-Digit)" required maxLength={6} className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-sm font-black focus:border-green-500 transition-colors outline-none" />
+                <input type="password" value={signUpPin} onChange={(e) => { setSignUpPin(e.target.value); setAuthError(''); }} placeholder="Security PIN (4-Digit)" required maxLength={6} className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-14 pr-6 py-4 text-base font-black focus:border-green-500 transition-colors outline-none" />
               </div>
               {authError && <div className="text-red-500 text-[10px] font-black uppercase text-center animate-pulse">{authError}</div>}
               <button type="submit" className="w-full py-5 bg-green-500 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter hover:bg-green-400 transition-all shadow-[0_0_30px_rgba(34,197,94,0.3)] mt-2">

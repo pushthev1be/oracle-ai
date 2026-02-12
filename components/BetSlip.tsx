@@ -112,7 +112,7 @@ export const BetSlip: React.FC<BetSlipProps> = ({
                     </div>
                 )}
 
-                <textarea value={userPrediction} onChange={(e) => setUserPrediction(e.target.value)} placeholder="Personal notes/hunch..." className="w-full h-20 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs focus:border-green-500 outline-none" />
+                <textarea value={userPrediction} onChange={(e) => setUserPrediction(e.target.value)} placeholder="Personal notes/hunch..." className="w-full h-20 bg-slate-950 border border-slate-800 rounded-xl p-3 text-base focus:border-green-500 outline-none placeholder:text-slate-600" />
 
                 <button onClick={runAnalysis} disabled={isLoading} className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter shadow-xl transition-all">
                     {isLoading ? <div className="flex flex-col items-center"><Loader2 className="animate-spin mb-1" size={16} /><span className="text-[8px]">{loadingMessages[loadingMsgIdx]}</span></div> : 'ANALYZE SELECTIONS'}
