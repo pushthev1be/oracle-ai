@@ -9,8 +9,8 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
   // Try real API call with timeout
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    const propsString = playerProps.length > 0 
+
+    const propsString = playerProps.length > 0
       ? playerProps.map(p => `- ${p.player} to get ${p.value} (${p.type})`).join('\n')
       : "No specific player props provided.";
 
@@ -30,22 +30,23 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     ${propsString}
     
     TASKS:
-    1. Search for TODAY'S LATEST team news (injuries, lineup leaks, manager quotes).
-    2. Check the last 3 matches of form for both teams.
+    1. Search for the LATEST team news, injuries, and lineup info relative to the Match Date (${match.date}).
+    2. ***CRITICAL***: Verify the CURRENT SQUAD for both teams as of ${match.date}. Check for recent transfers/loans.
+    3. Ensure all stats cited are from the current ongoing season (${new Date().getFullYear()}).
     3. Provide an expert verdict on the likely winner or draw.
     4. Predict the exact scoreline.
-    5. DETAILED ANALYSIS of user's bets/props based on current stats and matchups. Do not be brief.
-    
+    5. DETAILED ANALYSIS of user's bets/props based on current stats.
+
     Format EXACTLY as tags:
     [PREDICTION] summary verdict [/PREDICTION]
     [SCORELINE] 2-1 [/SCORELINE]
-    [SCORERS] name1, name2 [/SCORERS]
+    [SCORERS] Surname1, Surname2 (Cur. Team Verified) [/SCORERS]
     [PLAY] specific suggested betting market [/PLAY]
-    [PROP_INSIGHTS] detailed analysis of user picks, citing specific stats [/PROP_INSIGHTS]
+    [PROP_INSIGHTS] detailed analysis of user picks [/PROP_INSIGHTS]
     [REASONING] 
     Provide a comprehensive breakdown. 
     - Discuss team form and motivation.
-    - Analyze key player matchups.
+    - Confirm key players are available and currently at the club.
     - Explain why the predicted scoreline is likely.
     [/REASONING]
   `;
@@ -56,14 +57,14 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
 
     const response = await Promise.race([
       ai.models.generateContent({
-        model: "gemini-2.5-flash", 
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           tools: [{ google_search: {} }],
           temperature: 0.7,
         }
       }),
-      new Promise((_, reject) => 
+      new Promise((_, reject) =>
         setTimeout(() => reject(new Error("API timeout")), 45000)
       )
     ]);
@@ -71,7 +72,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     clearTimeout(timeoutId);
 
     const text = (response as any).text || "";
-    
+
     const extract = (tag: string) => {
       const regex = new RegExp(`\\[${tag}\\]([\\s\\S]*?)\\[\\/${tag}\\]`);
       return text.match(regex)?.[1]?.trim() || "";
@@ -96,7 +97,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     };
   } catch (error) {
     console.error("Oracle Error:", error);
-    
+
     // Fallback to fast mock response
     return {
       prediction: "Strong form advantage suggests home team should control the match. Expect a competitive fixture.",
