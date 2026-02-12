@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout';
+import { BetSlip } from './components/BetSlip';
 import { SportType, Match, PlayerProp, AIAnalysis, PastSlip, PlayerMarket, SlipStatus, MatchStatus, DashboardStats, LeaderboardUser, UserProfile, NewsPost, PlatformType, Team } from './types';
 import { COMPETITIONS, MOCK_MATCHES, MOCK_LEADERBOARD, MOCK_NEWS } from './constants';
 import {
@@ -569,121 +570,45 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Sidebar */}
-        <aside className="lg:col-span-3">
+        <aside className="hidden lg:block lg:col-span-3">
           <div className="sticky top-28 space-y-6">
-            {activeMatch ? (
-              <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
-                <div className="bg-green-500 p-4 text-slate-950 flex items-center justify-between">
-                  <h4 className="font-black italic uppercase tracking-tighter">BET SLIP</h4>
-                  <Zap size={18} fill="currentColor" />
-                </div>
-
-                <div className="p-5 space-y-6">
-                  {/* Status Info */}
-                  {activeMatch.status !== MatchStatus.UPCOMING && (
-                    <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-center gap-4">
-                      <div className="text-center">
-                        <p className="text-[10px] font-black text-slate-500 uppercase">{activeMatch.homeTeam.name}</p>
-                        <p className="text-xl font-black">{activeMatch.result?.homeScore}</p>
-                      </div>
-                      <div className="text-slate-800 font-black text-sm italic">SCORE</div>
-                      <div className="text-center">
-                        <p className="text-[10px] font-black text-slate-500 uppercase">{activeMatch.awayTeam.name}</p>
-                        <p className="text-xl font-black">{activeMatch.result?.awayScore}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Outcome Odds */}
-                  {activeMatch.status === MatchStatus.UPCOMING && (
-                    <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Outcome Selection</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        <button className="bg-slate-950 border border-slate-800 p-2.5 rounded-xl hover:border-green-500 text-center transition-all group">
-                          <span className="block text-[8px] font-black text-slate-500 mb-1">1</span>
-                          <span className="block text-xs font-black text-slate-100 group-hover:text-green-500">{activeMatch.odds.home.toFixed(2)}</span>
-                        </button>
-                        <button className="bg-slate-950 border border-slate-800 p-2.5 rounded-xl hover:border-green-500 text-center transition-all group">
-                          <span className="block text-[8px] font-black text-slate-500 mb-1">X</span>
-                          <span className="block text-xs font-black text-slate-100 group-hover:text-green-500">{activeMatch.odds.draw?.toFixed(2) || '2.50'}</span>
-                        </button>
-                        <button className="bg-slate-950 border border-slate-800 p-2.5 rounded-xl hover:border-green-500 text-center transition-all group">
-                          <span className="block text-[8px] font-black text-slate-500 mb-1">2</span>
-                          <span className="block text-xs font-black text-slate-100 group-hover:text-green-500">{activeMatch.odds.away.toFixed(2)}</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Player Props */}
-                  {activeMatch.playerMarkets && activeMatch.playerMarkets.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Player Props</p>
-                      <div className="space-y-2">
-                        {activeMatch.playerMarkets.map((market, idx) => (
-                          <div key={idx} onClick={() => togglePlayerProp(market)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${playerProps.find(p => p.player === market.player) ? 'bg-green-500/10 border-green-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}>
-                            <div className="flex items-center gap-3">
-                              <img src={market.playerImage} className="w-8 h-8 rounded-full border border-slate-800" />
-                              <div>
-                                <p className="text-[10px] font-black text-slate-100 leading-none">{market.player}</p>
-                                <p className="text-[8px] font-bold text-slate-500 uppercase mt-1">{market.type} {market.line}</p>
-                              </div>
-                            </div>
-                            {playerProps.find(p => p.player === market.player) ? <Check size={14} className="text-green-500" /> : <PlusCircle size={14} className="text-slate-600" />}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <textarea value={userPrediction} onChange={(e) => setUserPrediction(e.target.value)} placeholder="Personal notes/hunch..." className="w-full h-20 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs focus:border-green-500 outline-none" />
-
-                  <button onClick={runAnalysis} disabled={isLoading} className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter shadow-xl transition-all">
-                    {isLoading ? <div className="flex flex-col items-center"><Loader2 className="animate-spin mb-1" size={16} /><span className="text-[8px]">{LOADING_MESSAGES[loadingMsgIdx]}</span></div> : 'ANALYZE SELECTIONS'}
-                  </button>
-
-                  {aiAnalysis && (
-                    <div className="pt-6 space-y-4 border-t border-slate-800 animate-in slide-in-from-bottom-2 duration-300">
-                      <div className="p-4 bg-slate-950 rounded-2xl border-l-4 border-green-500">
-                        <p className="text-[9px] font-black text-green-500 uppercase mb-1">Expert Verdict</p>
-                        <p className="text-sm font-black text-slate-100 italic leading-tight">{aiAnalysis.prediction}</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-slate-800/20 rounded-xl border border-slate-800">
-                          <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Score</p>
-                          <p className="text-lg font-black italic">{aiAnalysis.scoreline}</p>
-                        </div>
-                        <div className="p-3 bg-slate-800/20 rounded-xl border border-slate-800">
-                          <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Best Bet</p>
-                          <p className="text-[10px] font-black text-green-400 uppercase italic mt-1">{aiAnalysis.suggestedPlay}</p>
-                        </div>
-                      </div>
-                      <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
-                        <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Scorers</p>
-                        <div className="flex flex-wrap gap-2">
-                          {aiAnalysis.likelyScorers.map((s, i) => (
-                            <span key={i} className="text-[10px] font-black text-slate-100 bg-slate-800 px-2 py-1 rounded-lg"># {s}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-4 bg-slate-800/10 rounded-2xl border border-slate-800">
-                        <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Reasoning</p>
-                        <p className="text-[10px] text-slate-400 leading-relaxed italic">"{aiAnalysis.reasoning}"</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-slate-900 rounded-3xl p-10 border border-slate-800 text-center shadow-2xl">
-                <Target size={48} className="mx-auto mb-6 text-slate-700 opacity-30" />
-                <h4 className="font-black italic text-slate-100 mb-2 uppercase tracking-tighter">Pick a Target</h4>
-                <p className="text-xs text-slate-500 leading-relaxed px-4">Select a match to start building your AI-verified slip.</p>
-              </div>
-            )}
+            <BetSlip
+              activeMatch={activeMatch}
+              userPrediction={userPrediction}
+              setUserPrediction={setUserPrediction}
+              playerProps={playerProps}
+              togglePlayerProp={togglePlayerProp}
+              isLoading={isLoading}
+              runAnalysis={runAnalysis}
+              loadingMsgIdx={loadingMsgIdx}
+              loadingMessages={LOADING_MESSAGES}
+              aiAnalysis={aiAnalysis}
+            />
           </div>
         </aside>
       </div>
+
+      {/* Mobile Bet Slip Modal */}
+      {activeMatch && (
+        <div className="fixed inset-0 z-[60] lg:hidden flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-sm p-0 sm:p-6 animate-in fade-in duration-200">
+          <div className="w-full h-[85vh] sm:h-auto sm:max-w-md bg-slate-900 rounded-t-3xl sm:rounded-3xl border-t sm:border border-slate-800 shadow-2xl relative animate-in slide-in-from-bottom-full duration-300">
+            <div className="h-1 w-12 bg-slate-700/50 rounded-full mx-auto mt-3 mb-1 sm:hidden"></div>
+            <BetSlip
+              activeMatch={activeMatch}
+              userPrediction={userPrediction}
+              setUserPrediction={setUserPrediction}
+              playerProps={playerProps}
+              togglePlayerProp={togglePlayerProp}
+              isLoading={isLoading}
+              runAnalysis={runAnalysis}
+              loadingMsgIdx={loadingMsgIdx}
+              loadingMessages={LOADING_MESSAGES}
+              aiAnalysis={aiAnalysis}
+              onClose={() => setActiveMatch(null)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Auth Modal */}
       {showSignUp && (
