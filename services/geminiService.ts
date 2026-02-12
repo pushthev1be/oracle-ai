@@ -31,9 +31,9 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     
     TASKS:
     1. Search for the LATEST team news, injuries, and lineup info relative to the Match Date (${match.date}).
-    2. ***CRITICAL***: Verify the CURRENT SQUAD for both teams as of ${match.date}. Check for recent transfers/loans.
-    3. Ensure all stats cited are from the current ongoing season (${new Date().getFullYear()}).
-    3. Provide an expert verdict on the likely winner or draw.
+    2. ***CRITICAL***: Verify the CURRENT SQUAD. Do NOT use historical knowledge.
+    3. ***HARD WARNING***: Kylian Mbappé is NO LONGER at PSG (he is at Real Madrid). Do not list him as a PSG scorer under any circumstances.
+    4. Provide an expert verdict on the likely winner or draw.
     4. Predict the exact scoreline.
     5. DETAILED ANALYSIS of user's bets/props based on current stats.
 
@@ -57,11 +57,11 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
 
     const response = await Promise.race([
       ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-1.5-flash",
         contents: prompt,
         config: {
           tools: [{ google_search: {} }],
-          temperature: 0.7,
+          temperature: 0.1,
         }
       }),
       new Promise((_, reject) =>

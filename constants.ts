@@ -98,7 +98,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'Premier League',
     homeTeam: { id: 't_tottenham', name: 'Tottenham', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Tottenham' },
     awayTeam: { id: 't_manchester_utd', name: 'Man United', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=ManUtd' },
-    date: '2024-05-20 15:00',
+    date: '2026-02-12 15:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 2.20, draw: 3.50, away: 2.80 },
     playerMarkets: [
@@ -146,7 +146,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'La Liga',
     homeTeam: { id: 't_sevilla', name: 'Sevilla', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Sevilla' },
     awayTeam: { id: 't_villarreal', name: 'Villarreal', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Villarreal' },
-    date: '2024-05-23 19:00',
+    date: '2026-05-23 19:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.95, draw: 3.40, away: 3.80 },
     playerMarkets: []
@@ -174,7 +174,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'NBA',
     homeTeam: { id: 't_bulls', name: 'Chicago Bulls', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Bulls' },
     awayTeam: { id: 't_nets', name: 'Brooklyn Nets', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Nets' },
-    date: '2024-05-20 01:00',
+    date: '2026-05-20 01:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.65, away: 2.35 }
   },
@@ -183,7 +183,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'NBA',
     homeTeam: { id: 't_mavs', name: 'Dallas Mavericks', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Mavericks' },
     awayTeam: { id: 't_suns', name: 'Phoenix Suns', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Suns' },
-    date: '2024-05-21 22:00',
+    date: '2026-05-21 22:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.90, away: 1.98 }
   },
@@ -192,7 +192,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'NBA',
     homeTeam: { id: 't_nuggets', name: 'Denver Nuggets', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Nuggets' },
     awayTeam: { id: 't_grizzlies', name: 'Memphis Grizzlies', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Grizzlies' },
-    date: '2024-05-22 20:30',
+    date: '2026-05-22 20:30',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.75, away: 2.20 }
   },
@@ -201,7 +201,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'EuroLeague',
     homeTeam: { id: 't_real_madrid_bball', name: 'Real Madrid', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=RealMadridBB' },
     awayTeam: { id: 't_barcelona_bball', name: 'Barcelona', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=BarcelonaBB' },
-    date: '2024-05-20 19:00',
+    date: '2026-05-20 19:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.88, away: 1.98 }
   },
@@ -210,7 +210,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'EuroLeague',
     homeTeam: { id: 't_olympiacos', name: 'Olympiacos', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Olympiacos' },
     awayTeam: { id: 't_panathinaikos', name: 'Panathinaikos', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Panathinaikos' },
-    date: '2024-05-21 20:30',
+    date: '2026-05-21 20:30',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.92, away: 1.92 }
   },
@@ -219,7 +219,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'EuroLeague',
     homeTeam: { id: 't_anadolu_efes', name: 'Anadolu Efes', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Efes' },
     awayTeam: { id: 't_fenerbahce', name: 'Fenerbahçe', logo: 'https://api.dicebear.com/7.x/identicon/svg?seed=Fenerbahce' },
-    date: '2024-05-22 18:00',
+    date: '2026-05-22 18:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.85, away: 2.05 }
   },
@@ -228,7 +228,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'ATP Tour',
     homeTeam: { id: 't_djokovic', name: 'Novak Djokovic', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Djokovic' },
     awayTeam: { id: 't_alcaraz', name: 'Carlos Alcaraz', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alcaraz' },
-    date: '2024-05-21 14:00',
+    date: '2026-05-21 14:00',
     status: MatchStatus.UPCOMING,
     odds: { home: 2.40, away: 1.58 },
     playerMarkets: [
@@ -240,7 +240,7 @@ export const MOCK_MATCHES: Match[] = [
     competition: 'ATP Tour',
     homeTeam: { id: 't_sinner', name: 'Jannik Sinner', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sinner' },
     awayTeam: { id: 't_medvedev', name: 'Daniil Medvedev', logo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Medvedev' },
-    date: '2024-05-22 16:30',
+    date: '2026-05-22 16:30',
     status: MatchStatus.UPCOMING,
     odds: { home: 1.70, away: 2.15 },
     playerMarkets: []
