@@ -112,6 +112,13 @@ export interface PastSlip {
   payout?: number;
 }
 
+export interface DailyPrediction {
+  id: string;
+  match: Match;
+  analysis: AIAnalysis;
+  timestamp: number;
+}
+
 export interface DashboardStats {
   totalSlips: number;
   winRate: number;

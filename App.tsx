@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout';
 import { BetSlip } from './components/BetSlip';
-import { SportType, Match, PlayerProp, AIAnalysis, PastSlip, PlayerMarket, SlipStatus, MatchStatus, DashboardStats, LeaderboardUser, UserProfile, NewsPost, PlatformType, Team } from './types';
+import { SportType, Match, PlayerProp, AIAnalysis, PastSlip, PlayerMarket, SlipStatus, MatchStatus, DashboardStats, LeaderboardUser, UserProfile, NewsPost, PlatformType, Team, DailyPrediction } from './types';
 import { COMPETITIONS, MOCK_MATCHES, MOCK_LEADERBOARD, MOCK_NEWS } from './constants';
 import {
   ChevronRight, Search, Dribbble, Flame, CircleDot, Loader2, Target, Sparkles,
@@ -37,7 +37,7 @@ const App: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
-  const [viewMode, setViewMode] = useState<'active' | 'history' | 'dashboard' | 'leaderboard' | 'news' | 'fixtures'>('active');
+  const [viewMode, setViewMode] = useState<'active' | 'history' | 'dashboard' | 'leaderboard' | 'news' | 'fixtures' | 'daily_tips'>('active');
   const [pastSlips, setPastSlips] = useState<PastSlip[]>([]);
 
   // User Authentication State
@@ -58,6 +58,75 @@ const App: React.FC = () => {
     const registry = getGlobalRegistry();
     return !!registry[signUpName.trim().toLowerCase()];
   }, [signUpName]);
+
+  // Daily Predictions State
+  const [dailyPredictions, setDailyPredictions] = useState<DailyPrediction[]>([]);
+  const [isGeneratingDaily, setIsGeneratingDaily] = useState(false);
+
+  useEffect(() => {
+    // Check for cached daily predictions
+    const today = new Date().toLocaleDateString();
+    const cacheKey = `oracle_daily_predictions_${today}`;
+    const cached = localStorage.getItem(cacheKey);
+
+    if (cached) {
+      try {
+        setDailyPredictions(JSON.parse(cached));
+      } catch (e) {
+        console.error("Failed to parse daily cache", e);
+      }
+    }
+  }, []);
+
+  const generateDailyPredictions = async () => {
+    if (dailyPredictions.length > 0) return; // Already have them
+
+    setIsGeneratingDaily(true);
+    const today = new Date().toLocaleDateString();
+    const cacheKey = `oracle_daily_predictions_${today}`;
+
+    // Select top 3 matches (prioritize major leagues)
+    const candidates = matches.filter(m =>
+      (m.competition === 'Premier League' || m.competition === 'NBA' || m.competition === 'Champions League') &&
+      m.status !== MatchStatus.FINISHED
+    ).slice(0, 3);
+
+    // If no major leagues, just take top 3 upcoming
+    const targetMatches = candidates.length > 0 ? candidates : matches.filter(m => m.status !== MatchStatus.FINISHED).slice(0, 3);
+
+    if (targetMatches.length === 0) {
+      setIsGeneratingDaily(false);
+      return;
+    }
+
+    try {
+      const promises = targetMatches.map(async (match) => {
+        const analysis = await getAIAnalysis(match, "Genreate a general daily betting tip for this match. Focus on the most likely outcome.", []);
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          match,
+          analysis,
+          timestamp: Date.now()
+        } as DailyPrediction;
+      });
+
+      const results = await Promise.all(promises);
+      setDailyPredictions(results);
+      localStorage.setItem(cacheKey, JSON.stringify(results));
+    } catch (error) {
+      console.error("Failed to generate daily predictions", error);
+    } finally {
+      setIsGeneratingDaily(false);
+    }
+  };
+
+  const handleViewDailyTips = () => {
+    setViewMode('daily_tips');
+    if (dailyPredictions.length === 0) {
+      generateDailyPredictions();
+    }
+  };
+
 
   const currentAvatar = useMemo(() => {
     if (isUsernameTaken) {
@@ -301,6 +370,9 @@ const App: React.FC = () => {
               </button>
               <button onClick={() => setViewMode('leaderboard')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'leaderboard' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
                 <Trophy size={20} /> <span className="font-semibold">Leaderboard</span>
+              </button>
+              <button onClick={handleViewDailyTips} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'daily_tips' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
+                <Sparkles size={20} /> <span className="font-semibold">Daily Tips</span>
               </button>
             </div>
           </section>
@@ -567,6 +639,81 @@ const App: React.FC = () => {
               })}
             </div>
           )}
+
+          {viewMode === 'daily_tips' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><Sparkles className="text-green-500" /> Today's Oracle</h2>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-900 px-3 py-1 rounded-full border border-slate-800">{new Date().toLocaleDateString()}</div>
+              </div>
+
+              {isGeneratingDaily ? (
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center shadow-xl">
+                  <Loader2 className="animate-spin mx-auto text-green-500 mb-4" size={48} />
+                  <h3 className="text-xl font-black italic text-slate-100 uppercase tracking-tighter mb-2">Consulting the Oracle...</h3>
+                  <p className="text-sm text-slate-500 font-bold"> Analyzing today's market data to generate premium insights.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {dailyPredictions.length > 0 ? (
+                    dailyPredictions.map(item => (
+                      <div key={item.id} className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                        <div className="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.match.competition}</span>
+                          </div>
+                          <span className="text-[10px] font-black text-green-500 uppercase tracking-widest flex items-center gap-1"><Zap size={10} fill="currentColor" /> AI Verified</span>
+                        </div>
+                        <div className="p-6">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="text-center">
+                              <img src={item.match.homeTeam.logo} className="w-12 h-12 mx-auto mb-2 rounded-full border border-slate-800 bg-slate-950 p-1" />
+                              <p className="font-black text-xs uppercase italic">{item.match.homeTeam.name}</p>
+                            </div>
+                            <div className="font-black text-xl italic text-slate-700">VS</div>
+                            <div className="text-center">
+                              <img src={item.match.awayTeam.logo} className="w-12 h-12 mx-auto mb-2 rounded-full border border-slate-800 bg-slate-950 p-1" />
+                              <p className="font-black text-xs uppercase italic">{item.match.awayTeam.name}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="p-4 bg-slate-950 rounded-2xl border-l-4 border-green-500">
+                              <p className="text-[9px] font-black text-green-500 uppercase mb-1">Expert Verdict</p>
+                              <p className="text-sm font-black text-slate-100 italic leading-tight">{item.analysis.prediction}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="p-3 bg-slate-800/20 rounded-xl border border-slate-800">
+                                <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Score</p>
+                                <p className="text-lg font-black italic">{item.analysis.scoreline}</p>
+                              </div>
+                              <div className="p-3 bg-slate-800/20 rounded-xl border border-slate-800">
+                                <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Key Players</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {item.analysis.likelyScorers.slice(0, 2).map((s, i) => (
+                                    <span key={i} className="text-[9px] font-black text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded text-nowrap">{s}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="p-4 bg-slate-800/10 rounded-2xl border border-slate-800">
+                              <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Analysis</p>
+                              <p className="text-[10px] text-slate-400 leading-relaxed italic whitespace-pre-wrap">"{item.analysis.reasoning}"</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-20 bg-slate-900/50 rounded-3xl border border-slate-800 border-dashed">
+                      <Sparkles className="mx-auto text-slate-800 mb-4" size={48} />
+                      <p className="text-slate-500 font-bold uppercase italic tracking-tighter">No daily tips available right now.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar */}
@@ -658,6 +805,10 @@ const App: React.FC = () => {
         <button onClick={() => setViewMode('history')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'history' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
           <History size={20} />
           <span className="text-[9px] font-bold uppercase tracking-tight">Vault</span>
+        </button>
+        <button onClick={handleViewDailyTips} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'daily_tips' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
+          <Sparkles size={20} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Tips</span>
         </button>
         <button onClick={() => setViewMode('leaderboard')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'leaderboard' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
           <Trophy size={20} />
