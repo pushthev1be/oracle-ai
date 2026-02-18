@@ -1,6 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { Match, AIAnalysis, PlayerProp } from "../types";
+import { fetchPrizepicksProjections } from "./prizepicksService";
 
 /**
  * Generates a high-speed sports analysis using the Gemini Flash model with Google Search grounding.
@@ -18,6 +19,19 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
       ? playerProps.map(p => `- ${p.player} to get ${p.value} (${p.type})`).join('\n')
       : "No specific player props provided.";
 
+    // Get Supplemental Data
+    const projections = await fetchPrizepicksProjections();
+    const relevantProps = projections.filter(p =>
+      p.player.toLowerCase().includes(match.homeTeam.name.toLowerCase()) ||
+      p.player.toLowerCase().includes(match.awayTeam.name.toLowerCase()) ||
+      p.team.toLowerCase().includes(match.homeTeam.name.toLowerCase()) ||
+      p.team.toLowerCase().includes(match.awayTeam.name.toLowerCase())
+    ).slice(0, 10);
+
+    const supplementalString = relevantProps.length > 0
+      ? relevantProps.map(p => `- ${p.player} (${p.team}): ${p.line} ${p.stat}`).join('\n')
+      : "No supplemental market data found for this match.";
+
     const today = new Date().toLocaleDateString();
 
     const prompt = `
@@ -32,6 +46,9 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     User context/hunch: ${userPrediction}
     User specific bets:
     ${propsString}
+
+    SUPPLEMENTAL MARKET CONTEXT (PrizePicks):
+    ${supplementalString}
     
     TASKS:
     1. Search for the LATEST team news, injuries, and lineup info relative to the Match Date (${match.date}).
@@ -57,7 +74,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
 
     // Add timeout to API call
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // Increased to 90 second timeout
 
     const response = await Promise.race([
       ai.models.generateContent({
@@ -69,7 +86,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
         }
       }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("API timeout (45s)")), 45000)
+        setTimeout(() => reject(new Error("Oracle Request Timeout (90s) - The analysis took too long. Try a shorter hunch.")), 90000)
       )
     ]);
 
@@ -78,8 +95,10 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     const text = (response as any).text || "";
 
     const extract = (tag: string) => {
-      const regex = new RegExp(`\\[${tag}\\]([\\s\\S]*?)\\[\\/${tag}\\]`);
-      return text.match(regex)?.[1]?.trim() || "";
+      // Improved regex to be case-insensitive and match even if closing tag is missing (greedy up to next tag or end)
+      const regex = new RegExp(`\\[${tag}\\]([\\s\\S]*?)(?:\\[\\/${tag}\\]|$)`, "i");
+      const match = text.match(regex);
+      return match?.[1]?.trim() || "";
     };
 
     const groundingChunks = (response as any).candidates?.[0]?.groundingMetadata?.groundingChunks || [];
@@ -109,7 +128,7 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
       scoreline: "ERR",
       likelyScorers: [],
       suggestedPlay: "Check API Settings",
-      reasoning: `The AI analysis failed with the following error: ${errorMessage}. Please check your Gemini API key and model permissions on Render.`,
+      reasoning: `The AI analysis failed with the following error: ${errorMessage}. This usually happens when the prompt is too complex or the API rate limit is hit. Try simplifying your 'hunch'.`,
       playerPropInsights: "Detailed insights unavailable due to connection error.",
       groundingSources: []
     };

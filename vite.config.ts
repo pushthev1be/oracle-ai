@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (p: string) => p.replace(/^\/api\/odds/, ''),
         },
+        '/api/prizepicks': {
+          target: 'https://api.prizepicks.com',
+          changeOrigin: true,
+          rewrite: (p: string) => p.replace(/^\/api\/prizepicks/, ''),
+        },
       },
     },
     plugins: [react()],

@@ -112,7 +112,19 @@ export const BetSlip: React.FC<BetSlipProps> = ({
                     </div>
                 )}
 
-                <textarea value={userPrediction} onChange={(e) => setUserPrediction(e.target.value)} placeholder="Personal notes/hunch..." className="w-full h-20 bg-slate-950 border border-slate-800 rounded-xl p-3 text-base focus:border-green-500 outline-none placeholder:text-slate-600" />
+                <div className="relative">
+                    <textarea
+                        value={userPrediction}
+                        onChange={(e) => setUserPrediction(e.target.value.slice(0, 1000))}
+                        placeholder="Personal notes/hunch (e.g. key injuries, weather)..."
+                        className={`w-full h-24 bg-slate-950 border ${userPrediction.length > 800 ? 'border-orange-500' : 'border-slate-800'} rounded-xl p-3 text-base focus:border-green-500 outline-none placeholder:text-slate-600 transition-all`}
+                    />
+                    {userPrediction.length > 500 && (
+                        <div className={`absolute bottom-2 right-2 text-[8px] font-black ${userPrediction.length > 900 ? 'text-orange-500' : 'text-slate-600'}`}>
+                            {userPrediction.length}/1000
+                        </div>
+                    )}
+                </div>
 
                 <button onClick={runAnalysis} disabled={isLoading} className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter shadow-xl transition-all">
                     {isLoading ? <div className="flex flex-col items-center"><Loader2 className="animate-spin mb-1" size={16} /><span className="text-[8px]">{loadingMessages[loadingMsgIdx]}</span></div> : 'ANALYZE SELECTIONS'}
