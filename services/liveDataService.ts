@@ -1,4 +1,5 @@
 import { Match, MatchStatus } from "../types";
+import { fetchWithProxy } from "./apiUtils";
 
 const isProd = import.meta.env.PROD;
 
@@ -58,7 +59,7 @@ const fetchAllOdds = async (): Promise<Map<string, OddsLookup>> => {
 
   const fetches = ODDS_SPORT_KEYS.map(async ({ key, competition }) => {
     try {
-      const res = await fetch(
+      const res = await fetchWithProxy(
         `${ODDS_API_BASE}/sports/${key}/odds/?apiKey=${ODDS_API_KEY}&regions=uk&markets=h2h&oddsFormat=decimal`
       );
       if (!res.ok) return;
@@ -112,7 +113,7 @@ const fetchFootballFromFD = async (oddsMap: Map<string, OddsLookup>): Promise<Ma
     const futureDate = new Date(today);
     futureDate.setDate(futureDate.getDate() + 14);
     const dateTo = futureDate.toISOString().split("T")[0];
-    const res = await fetch(`${FOOTBALL_DATA_BASE}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+    const res = await fetchWithProxy(`${FOOTBALL_DATA_BASE}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: { "X-Auth-Token": FOOTBALL_DATA_API_KEY },
     });
     if (!res.ok) return [];
@@ -170,7 +171,7 @@ const fetchFootballFromESPN = async (oddsMap: Map<string, OddsLookup>): Promise<
   const results: Match[] = [];
   const fetches = ESPN_FOOTBALL_FALLBACKS.map(async ({ endpoint, competition }) => {
     try {
-      const res = await fetch(`${ESPN_BASE}/${endpoint}/scoreboard`);
+      const res = await fetchWithProxy(`${ESPN_BASE}/${endpoint}/scoreboard`);
       if (!res.ok) return;
       const data = await res.json();
       for (const event of (data.events ?? []) as Record<string, unknown>[]) {
@@ -225,7 +226,7 @@ const fetchFootballFromESPN = async (oddsMap: Map<string, OddsLookup>): Promise<
 
 const fetchNBAMatches = async (oddsMap: Map<string, OddsLookup>): Promise<Match[]> => {
   try {
-    const res = await fetch(`${ESPN_BASE}/basketball/nba/scoreboard`);
+    const res = await fetchWithProxy(`${ESPN_BASE}/basketball/nba/scoreboard`);
     if (!res.ok) return [];
     const data = await res.json();
     const events: Record<string, unknown>[] = data.events ?? [];
@@ -279,7 +280,7 @@ const fetchNBAMatches = async (oddsMap: Map<string, OddsLookup>): Promise<Match[
 
 const fetchTennisMatches = async (): Promise<Match[]> => {
   try {
-    const res = await fetch(`${ESPN_BASE}/tennis/atp/scoreboard`);
+    const res = await fetchWithProxy(`${ESPN_BASE}/tennis/atp/scoreboard`);
     if (!res.ok) return [];
     const data = await res.json();
     const matches: Match[] = [];

@@ -4,6 +4,8 @@
  * Fetches projections for player props to provide extra context to the AI.
  */
 
+import { fetchWithProxy } from "./apiUtils";
+
 export interface PrizepicksProjection {
     player: string;
     line: string;
@@ -14,8 +16,9 @@ export interface PrizepicksProjection {
 
 export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection[]> => {
     try {
+        const url = "https://api.prizepicks.com/projections";
         const isProd = import.meta.env.PROD;
-        const baseUrl = isProd ? "https://api.prizepicks.com/projections" : "/api/prizepicks/projections";
+        const targetUrl = isProd ? url : "/api/prizepicks/projections";
 
         // PrizePicks requires these headers to avoid 403 blocks
         const headers = {
@@ -24,7 +27,7 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
             "Connection": "keep-alive"
         };
 
-        const response = await fetch(baseUrl, { headers });
+        const response = await fetchWithProxy(targetUrl, { headers });
 
         if (!response.ok) {
             console.warn(`PrizePicks API returned ${response.status}. Skipping supplemental data.`);
