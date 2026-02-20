@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import {
-  Target,
   Sparkles,
-  Trophy,
-  X,
-  ArrowRight,
   Zap,
   Lock,
-  ChevronRight,
-  CheckCircle2
+  ArrowRight,
+  Target,
+  Wifi,
+  LayoutGrid,
+  User as UserIcon,
+  X
 } from 'lucide-react';
 
 interface OnboardingProps {
@@ -17,141 +17,166 @@ interface OnboardingProps {
 }
 
 interface Step {
-  id: number;
+  id: string;
+  targetId: string;
   title: string;
-  subtitle: string;
   description: string;
   icon: React.ReactNode;
-  highlights: string[];
 }
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(-1); // -1 is the welcome screen
+  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
   const steps: Step[] = [
     {
-      id: 1,
-      title: 'CONSULT THE ORACLE',
-      subtitle: `Welcome Interface, ${userName}`,
-      description: 'You have entered the Oracle network. Our AI engine consumes live data from ESPN and PrizePicks to find market inefficiencies.',
-      icon: <Sparkles className="w-16 h-16 text-green-500" />,
-      highlights: [
-        'Real-time ESPN data integration',
-        'PrizePicks market depth analysis',
-        'Expert sports ground truth'
-      ]
+      id: 'profile',
+      targetId: 'walkthrough-profile',
+      title: 'IDENTITY SECURED',
+      description: 'Your profile and private vault are initialized. All your betting history is stored locally and encrypted.',
+      icon: <UserIcon className="text-green-500" />
     },
     {
-      id: 2,
-      title: 'FLASH INTELLIGENCE',
-      subtitle: 'Gemini 2.0 Flash Engine',
-      description: 'Run 90-second deep scans on any match. Our AI cross-references injury reports, team form, and social sentiment.',
-      icon: <Zap className="w-16 h-16 text-green-500" />,
-      highlights: [
-        '90-second deep analysis scans',
-        'Search-grounded verification',
-        'Exact scoreline simulations'
-      ]
+      id: 'categories',
+      targetId: 'walkthrough-categories',
+      title: 'SECTOR ANALYSIS',
+      description: 'Switch between Football, Basketball, and Tennis. Each sector has specialized AI models trained on specific league data.',
+      icon: <LayoutGrid className="text-green-500" />
     },
     {
-      id: 3,
-      title: 'THE VAULT',
-      subtitle: 'Secure Your Intel',
-      description: 'Lock in your hunches and track your performance. Every prediction you make is stored in your private, local-first vault.',
-      icon: <Lock className="w-16 h-16 text-green-500" />,
-      highlights: [
-        'Encrypted local persistence',
-        'Performance tracking metrics',
-        'Global Leaderboard ranking'
-      ]
+      id: 'lobby',
+      targetId: 'walkthrough-lobby',
+      title: 'ORACLE FEED',
+      description: 'Browse the live feed of matches. Pulsing indicators show games currently being played in real-time.',
+      icon: <Target className="text-green-500" />
+    },
+    {
+      id: 'refresh',
+      targetId: 'walkthrough-refresh',
+      title: 'LIVE SYNC',
+      description: 'Need the absolute latest? Use the Live Refresh to manually sync with our global sport data providers.',
+      icon: <Wifi className="text-green-500" />
+    },
+    {
+      id: 'betslip',
+      targetId: 'walkthrough-betslip',
+      title: 'GEMINI COMMLINK',
+      description: 'The Bet Slip is where you talk to the Oracle. Select markets, add your hunches, and run deep AI scans.',
+      icon: <Zap className="text-green-500" />
     }
   ];
 
-  const step = steps[currentStep];
+  const updateTargetRect = () => {
+    if (currentStep >= 0 && currentStep < steps.length) {
+      const el = document.getElementById(steps[currentStep].targetId);
+      if (el) {
+        setTargetRect(el.getBoundingClientRect());
+      }
+    } else {
+      setTargetRect(null);
+    }
+  };
+
+  useLayoutEffect(() => {
+    updateTargetRect();
+    window.addEventListener('resize', updateTargetRect);
+    return () => window.removeEventListener('resize', updateTargetRect);
+  }, [currentStep]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      completeOnboarding();
+      onComplete();
     }
   };
 
-  const completeOnboarding = () => {
-    localStorage.setItem(
-      `oracle_onboarding_completed_${userName}`,
-      'true'
+  const skip = () => onComplete();
+
+  // Welcome Screen
+  if (currentStep === -1) {
+    return (
+      <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-in fade-in duration-500">
+        <div className="bg-slate-900 border border-slate-800 rounded-[3rem] shadow-2xl max-w-xl w-full relative overflow-hidden flex flex-col items-center p-10 text-center border-t-4 border-t-green-500">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-500/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="relative mb-8 bg-slate-950 p-6 rounded-full border border-slate-800 shadow-xl">
+            <Sparkles className="w-16 h-16 text-green-500 animate-pulse" />
+          </div>
+          <div className="space-y-4 mb-8">
+            <p className="text-[10px] font-black tracking-[0.3em] text-green-500 uppercase">SYSTEM INITIALIZED</p>
+            <h2 className="text-3xl font-black italic text-slate-100 uppercase tracking-tighter leading-none">Welcome, {userName}</h2>
+            <p className="text-sm font-bold text-slate-400 italic">"The Oracle is ready to analyze. Let's walk through the interface modules."</p>
+          </div>
+          <button onClick={() => setCurrentStep(0)} className="w-full py-5 bg-green-500 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter hover:bg-green-400 transition-all flex items-center justify-center gap-3">
+            Begin Walkthrough <ArrowRight size={20} />
+          </button>
+          <button onClick={skip} className="mt-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-slate-300 transition-colors">Skip Initialization</button>
+        </div>
+      </div>
     );
-    onComplete();
-  };
+  }
+
+  const step = steps[currentStep];
+
+  // SVG Mask for Spotlight
+  const maskPath = targetRect
+    ? `M 0 0 h ${window.innerWidth} v ${window.innerHeight} h -${window.innerWidth} Z 
+       M ${targetRect.left - 8} ${targetRect.top - 8} 
+       h ${targetRect.width + 16} 
+       v ${targetRect.height + 16} 
+       h -${targetRect.width + 16} Z`
+    : `M 0 0 h ${window.innerWidth} v ${window.innerHeight} h -${window.innerWidth} Z`;
+
+  // Tooltip positioning
+  const tooltipStyle: React.CSSProperties = targetRect ? {
+    position: 'fixed',
+    top: targetRect.bottom + 20 > window.innerHeight - 250 ? Math.max(20, targetRect.top - 200) : targetRect.bottom + 20,
+    left: Math.min(Math.max(20, targetRect.left + targetRect.width / 2 - 160), window.innerWidth - 340),
+  } : {};
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-in fade-in duration-500">
-      <div className="bg-slate-900 border border-slate-800 rounded-[3rem] shadow-2xl max-w-xl w-full relative overflow-hidden flex flex-col items-center p-10 text-center border-t-4 border-t-green-500">
+    <div className="fixed inset-0 z-[200] pointer-events-none overflow-hidden">
+      {/* Dimmed Background with Spotlight */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-auto cursor-default transition-all duration-500">
+        <path
+          d={maskPath}
+          fillRule="evenodd"
+          fill="rgba(2, 6, 23, 0.85)"
+          className="transition-all duration-500"
+        />
+      </svg>
 
-        {/* Background Gradients */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-500/10 blur-[100px] rounded-full pointer-events-none" />
-
-        <button
-          onClick={completeOnboarding}
-          className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors"
-        >
-          <X size={20} />
-        </button>
-
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-green-500/20 blur-2xl rounded-full scale-150 animate-pulse" />
-          <div className="relative z-10 bg-slate-950 p-6 rounded-full border border-slate-800 shadow-xl">
+      {/* Tooltip Card */}
+      <div
+        style={tooltipStyle}
+        className="w-[320px] bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-[0_0_50px_rgba(34,197,94,0.15)] pointer-events-auto animate-in zoom-in-95 duration-300"
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="p-2 bg-slate-950 rounded-xl border border-slate-800">
             {step.icon}
           </div>
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{currentStep + 1} / {steps.length}</div>
         </div>
 
-        <div className="space-y-4 mb-10 w-full">
-          <div>
-            <p className="text-[10px] font-black tracking-[0.3em] text-green-500 uppercase mb-2">{step.subtitle}</p>
-            <h2 className="text-3xl font-black italic text-slate-100 uppercase tracking-tighter leading-none">{step.title}</h2>
-          </div>
-          <p className="text-sm font-bold text-slate-400 leading-relaxed italic px-4">
-            "{step.description}"
-          </p>
-        </div>
+        <h3 className="text-xl font-black italic text-slate-100 uppercase tracking-tighter mb-2">{step.title}</h3>
+        <p className="text-xs font-medium text-slate-400 leading-relaxed mb-6 italic">"{step.description}"</p>
 
-        <div className="grid grid-cols-1 gap-3 w-full mb-10 text-left">
-          {step.highlights.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-2xl group hover:border-green-500/50 transition-all">
-              <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />
-              <span className="text-[11px] font-black uppercase italic text-slate-300 group-hover:text-slate-100 transition-colors">{item}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="w-full space-y-6">
-          <div className="flex justify-center gap-2">
-            {steps.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-1.5 transition-all duration-300 rounded-full ${idx === currentStep ? 'w-10 bg-green-500' : 'w-2 bg-slate-800'}`}
-              />
-            ))}
-          </div>
-
+        <div className="flex gap-3">
+          <button
+            onClick={skip}
+            className="flex-1 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+          >
+            DISMISS
+          </button>
           <button
             onClick={handleNext}
-            className="w-full py-5 bg-green-500 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter hover:bg-green-400 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(34,197,94,0.2)]"
+            className="flex-[2] py-3 bg-green-500 text-slate-950 font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-green-400 transition-all flex items-center justify-center gap-2"
           >
-            {currentStep === steps.length - 1 ? 'Unlock System' : 'Acknowledge Data'}
-            <ArrowRight size={20} />
-          </button>
-
-          <button
-            onClick={completeOnboarding}
-            className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
-          >
-            Skip Initialization Sequence
+            {currentStep === steps.length - 1 ? 'FINALIZE' : 'NEXT'}
+            <ArrowRight size={14} />
           </button>
         </div>
       </div>
     </div>
   );
 };
-

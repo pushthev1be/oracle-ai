@@ -40,7 +40,7 @@ export const BetSlip: React.FC<BetSlipProps> = ({
     }
 
     return (
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col max-h-[85vh] lg:max-h-none overflow-y-auto">
+        <div id="walkthrough-betslip" className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col max-h-[85vh] lg:max-h-none overflow-y-auto">
             <div className="bg-green-500 p-4 text-slate-950 flex items-center justify-between sticky top-0 z-10 shrink-0">
                 <h4 className="font-black italic uppercase tracking-tighter">BET SLIP</h4>
                 <div className="flex items-center gap-3">

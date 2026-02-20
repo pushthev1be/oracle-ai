@@ -340,7 +340,7 @@ const App: React.FC = () => {
         {/* Navigation Sidebar */}
         <aside className="lg:col-span-3 space-y-6">
           {user && (
-            <section className="bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-xl overflow-hidden relative group">
+            <section id="walkthrough-profile" className="bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-xl overflow-hidden relative group">
               <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={handleSignOut} className="text-slate-500 hover:text-red-500 transition-colors">
                   <LogOut size={16} />
@@ -356,7 +356,7 @@ const App: React.FC = () => {
             </section>
           )}
 
-          <section className="bg-slate-900 rounded-2xl p-4 lg:p-5 border border-slate-800 shadow-xl overflow-x-auto">
+          <section id="walkthrough-categories" className="bg-slate-900 rounded-2xl p-4 lg:p-5 border border-slate-800 shadow-xl overflow-x-auto">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 lg:mb-4">Categories</h3>
             <div className="flex lg:flex-col gap-3 lg:gap-2 min-w-max lg:min-w-0">
               {sports.map((s) => (
@@ -414,6 +414,7 @@ const App: React.FC = () => {
                 </div>
 
                 <button
+                  id="walkthrough-refresh"
                   onClick={async () => {
                     try {
                       const liveMatches = await fetchLiveMatches(true);
@@ -431,7 +432,7 @@ const App: React.FC = () => {
 
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div id="walkthrough-lobby" className="grid grid-cols-1 gap-4">
                 {filteredMatches.map(match => (
                   <div key={match.id} onClick={() => handleSelectMatch(match)} className={`group bg-slate-900 border ${activeMatch?.id === match.id ? 'border-green-500 ring-4 ring-green-500/10' : 'border-slate-800'} rounded-2xl p-6 cursor-pointer transition-all hover:border-slate-700 shadow-xl relative overflow-hidden`}>
                     <div className="flex justify-between items-center mb-6 opacity-60 text-[10px] font-black uppercase tracking-tighter">
