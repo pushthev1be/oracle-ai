@@ -6,24 +6,20 @@
 const isProd = import.meta.env.PROD;
 
 /**
- * Fetches data from a URL, using a CORS proxy in production if needed.
- * This is a workaround for static deployments (Render/Vercel) to reach external APIs.
+ * Fetches data from a URL. In production (static deployments), we skip problematic APIs
+ * that don't support CORS to avoid console errors.
  */
 export const fetchWithProxy = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    if (!isProd) {
-        return fetch(url, options);
+    // In production, only allow APIs that are known to work with CORS
+    if (isProd) {
+        // Allow ESPN APIs (they work)
+        if (url.includes('espn.com')) {
+            return fetch(url, options);
+        }
+        // Block other APIs that have CORS issues in production
+        throw new Error(`API not available in production: ${url}`);
     }
 
-    // Use allorigins.win as a proxy to bypass CORS in production
-    // We use the /raw endpoint to get the direct response
-    const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-
-    try {
-        const response = await fetch(proxiedUrl, options);
-        return response;
-    } catch (error) {
-        console.error(`Proxy Fetch Error for ${url}:`, error);
-        // Fallback to direct fetch if proxy fails
-        return fetch(url, options);
-    }
+    // Development: allow all APIs
+    return fetch(url, options);
 };

@@ -55,7 +55,7 @@ const statusFromESPN = (state: string): MatchStatus => {
 
 const fetchAllOdds = async (): Promise<Map<string, OddsLookup>> => {
   const result = new Map<string, OddsLookup>();
-  if (!ODDS_API_KEY) return result;
+  if (!ODDS_API_KEY || isProd) return result; // Skip Odds API in production due to CORS
 
   const fetches = ODDS_SPORT_KEYS.map(async ({ key, competition }) => {
     try {
@@ -339,8 +339,10 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
   try {
     const oddsMap = await fetchAllOdds();
 
-    const [fdFootball, espnFootball, nba, tennis] = await Promise.all([
-      fetchFootballFromFD(oddsMap),
+    // Skip Football Data API in production due to CORS issues
+    const fdFootball = isProd ? [] : await fetchFootballFromFD(oddsMap);
+
+    const [espnFootball, nba, tennis] = await Promise.all([
       fetchFootballFromESPN(oddsMap),
       fetchNBAMatches(oddsMap),
       fetchTennisMatches(),

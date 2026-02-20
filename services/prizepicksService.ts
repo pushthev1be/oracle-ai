@@ -15,10 +15,15 @@ export interface PrizepicksProjection {
 }
 
 export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection[]> => {
+    const isProd = import.meta.env.PROD;
+    if (isProd) {
+        // Skip PrizePicks in production due to CORS issues
+        return [];
+    }
+
     try {
         const url = "https://api.prizepicks.com/projections";
-        const isProd = import.meta.env.PROD;
-        const targetUrl = isProd ? url : "/api/prizepicks/projections";
+        const targetUrl = "/api/prizepicks/projections";
 
         // PrizePicks requires these headers to avoid 403 blocks
         const headers = {
