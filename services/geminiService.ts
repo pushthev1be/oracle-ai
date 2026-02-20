@@ -72,27 +72,41 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
     [/REASONING]
   `;
 
-    // Add timeout to API call
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000); // Increased to 90 second timeout
 
-    const response = await Promise.race([
-      ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: prompt,
+    // Model selection with fallback logic
+    const modelId = "gemini-2.0-flash";
+
+    // Attempt generation with search grounding
+    let response;
+    try {
+      response = await Promise.race([
+        ai.models.generateContent({
+          model: modelId,
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }],
+            temperature: 0.1,
+          }
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Oracle Request Timeout (90s) - The analysis took too long. Try a shorter hunch.")), 90000)
+        )
+      ]);
+    } catch (searchError: any) {
+      console.warn("Search-grounded analysis failed, falling back to standard analysis:", searchError);
+
+      // Fallback: Try without search tools if the first attempt failed
+      response = await ai.models.generateContent({
+        model: modelId,
+        contents: prompt + "\n\nNOTE: Perform this analysis using your internal knowledge as live search is currently unavailable.",
         config: {
-          tools: [{ googleSearch: {} }],
           temperature: 0.1,
         }
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Oracle Request Timeout (90s) - The analysis took too long. Try a shorter hunch.")), 90000)
-      )
-    ]);
-
-    clearTimeout(timeoutId);
+      });
+    }
 
     const text = (response as any).text || "";
+
 
     const extract = (tag: string) => {
       // Improved regex to be case-insensitive and match even if closing tag is missing (greedy up to next tag or end)
@@ -101,8 +115,16 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
       return match?.[1]?.trim() || "";
     };
 
+
     const groundingChunks = (response as any).candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const searchQueries = (response as any).candidates?.[0]?.groundingMetadata?.searchEntryPoint?.renderedContent || "";
+
+    if (searchQueries) {
+      console.log("Oracle Search Grounding used queries:", searchQueries);
+    }
+
     const sources = groundingChunks
+
       .filter((chunk: any) => chunk.web)
       .map((chunk: any) => ({
         title: chunk.web.title || "Live Source",

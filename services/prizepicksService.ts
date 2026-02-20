@@ -14,18 +14,25 @@ export interface PrizepicksProjection {
     league: string;
 }
 
+
+let cachedProjections: PrizepicksProjection[] | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection[]> => {
-    const isProd = import.meta.env.PROD;
-    if (isProd) {
-        // Skip PrizePicks in production due to CORS issues
-        return [];
+    const isProd = (import.meta as any).env.PROD;
+    if (isProd) return [];
+
+    // Return cached data if valid
+    const now = Date.now();
+    if (cachedProjections && (now - lastFetchTime < CACHE_DURATION)) {
+        console.log("Returning cached PrizePicks projections");
+        return cachedProjections;
     }
 
     try {
-        const url = "https://api.prizepicks.com/projections";
         const targetUrl = "/api/prizepicks/projections";
 
-        // PrizePicks requires these headers to avoid 403 blocks
         const headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "application/json",
@@ -36,15 +43,14 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
 
         if (!response.ok) {
             console.warn(`PrizePicks API returned ${response.status}. Skipping supplemental data.`);
-            return [];
+            return cachedProjections || []; // Return cache even if expired if fetch fails
         }
 
         const json = await response.json();
         const { data, included } = json;
 
-        if (!data || !included) return [];
+        if (!data || !included) return cachedProjections || [];
 
-        // 1. Build a record of players and leagues from the 'included' array
         const playersMap = new Map();
         const leaguesMap = new Map();
 
@@ -56,7 +62,6 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
             }
         });
 
-        // 2. Map the data projections to the players
         const projections: PrizepicksProjection[] = data.map((proj: any) => {
             const playerId = proj.relationships?.new_player?.data?.id;
             const leagueId = proj.relationships?.league?.data?.id;
@@ -73,9 +78,12 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
             };
         });
 
+        cachedProjections = projections;
+        lastFetchTime = now;
         return projections;
     } catch (error) {
         console.error("PrizePicks Scraper Error:", error);
-        return []; // Return empty array so analysis can still proceed
+        return cachedProjections || [];
     }
 };
+

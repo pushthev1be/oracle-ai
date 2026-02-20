@@ -102,8 +102,10 @@ const App: React.FC = () => {
     }
 
     try {
+
       const promises = targetMatches.map(async (match) => {
-        const analysis = await getAIAnalysis(match, "Genreate a general daily betting tip for this match. Focus on the most likely outcome.", []);
+        const analysis = await getAIAnalysis(match, "Generate a general daily betting tip for this match. Focus on the most likely outcome.", []);
+
         return {
           id: Math.random().toString(36).substr(2, 9),
           match,
@@ -410,10 +412,11 @@ const App: React.FC = () => {
                     {uniqueTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
+
                 <button
                   onClick={async () => {
                     try {
-                      const liveMatches = await fetchLiveMatches();
+                      const liveMatches = await fetchLiveMatches(true);
                       if (liveMatches && liveMatches.length > 0) {
                         setMatches(liveMatches);
                       }
@@ -423,8 +426,9 @@ const App: React.FC = () => {
                   }}
                   className="px-4 py-2.5 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl hover:bg-green-500/20 transition-all flex items-center gap-2 font-bold"
                 >
-                  <Wifi size={16} /> <span className="hidden sm:inline">Live</span>
+                  <Wifi size={16} /> <span className="hidden sm:inline">Live Refresh</span>
                 </button>
+
               </div>
 
               <div className="grid grid-cols-1 gap-4">

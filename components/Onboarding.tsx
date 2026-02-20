@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import {
-  ChevronRight,
   Target,
   Sparkles,
-  TrendingUp,
   Trophy,
-  Users,
   X,
-  Check,
-  ArrowRight
+  ArrowRight,
+  Zap,
+  Lock,
+  ChevronRight,
+  CheckCircle2
 } from 'lucide-react';
 
 interface OnboardingProps {
@@ -19,93 +19,51 @@ interface OnboardingProps {
 interface Step {
   id: number;
   title: string;
+  subtitle: string;
   description: string;
   icon: React.ReactNode;
-  details: string[];
-  color: string;
+  highlights: string[];
 }
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isSkipped, setIsSkipped] = useState(false);
 
   const steps: Step[] = [
     {
       id: 1,
-      title: 'Welcome to Oracle Odds AI',
-      description: `Hey ${userName}, ready to master sports predictions?`,
-      icon: <Sparkles className="w-16 h-16 text-blue-500" />,
-      details: [
-        'AI-powered betting analysis for Football, Basketball & Tennis',
-        'Real-time data from ESPN',
-        'Track your predictions and compete with others'
-      ],
-      color: 'blue'
+      title: 'CONSULT THE ORACLE',
+      subtitle: `Welcome Interface, ${userName}`,
+      description: 'You have entered the Oracle network. Our AI engine consumes live data from ESPN and PrizePicks to find market inefficiencies.',
+      icon: <Sparkles className="w-16 h-16 text-green-500" />,
+      highlights: [
+        'Real-time ESPN data integration',
+        'PrizePicks market depth analysis',
+        'Expert sports ground truth'
+      ]
     },
     {
       id: 2,
-      title: 'Get AI Analysis',
-      description: 'Select any match to get detailed predictions from Google Gemini AI',
-      icon: <Target className="w-16 h-16 text-purple-500" />,
-      details: [
-        '📊 Predicted scores and likely scorers',
-        '📈 Statistical analysis and confidence levels',
-        '💡 Strategic betting recommendations',
-        '⚡ Instant insights within seconds'
-      ],
-      color: 'purple'
+      title: 'FLASH INTELLIGENCE',
+      subtitle: 'Gemini 2.0 Flash Engine',
+      description: 'Run 90-second deep scans on any match. Our AI cross-references injury reports, team form, and social sentiment.',
+      icon: <Zap className="w-16 h-16 text-green-500" />,
+      highlights: [
+        '90-second deep analysis scans',
+        'Search-grounded verification',
+        'Exact scoreline simulations'
+      ]
     },
     {
       id: 3,
-      title: 'Player Props Analysis',
-      description: 'Analyze specific player performance metrics for guaranteed profit angles',
-      icon: <TrendingUp className="w-16 h-16 text-green-500" />,
-      details: [
-        '🎯 Get AI predictions for specific players',
-        '📋 Goals, assists, rebounds, and custom markets',
-        '🔍 Line value and edge detection',
-        '💰 Find hidden arbitrage opportunities'
-      ],
-      color: 'green'
-    },
-    {
-      id: 4,
-      title: 'Build Your Slip',
-      description: 'Combine multiple predictions into one powerful bet slip',
-      icon: <Check className="w-16 h-16 text-blue-500" />,
-      details: [
-        '✅ Add multiple predictions to your slip',
-        '📊 View combined odds and potential winnings',
-        '💾 Save slips for future reference',
-        '📈 Track your history and performance'
-      ],
-      color: 'blue'
-    },
-    {
-      id: 5,
-      title: 'Compete & Leaderboard',
-      description: 'Climb the ranks and prove your betting prowess',
-      icon: <Trophy className="w-16 h-16 text-amber-500" />,
-      details: [
-        '🏆 Real-time leaderboard rankings',
-        '📊 Track win rate and total profit',
-        '🎖️ Earn badges and achievements',
-        '👥 Compare performance with top predictors'
-      ],
-      color: 'amber'
-    },
-    {
-      id: 6,
-      title: 'Daily Tips & Community',
-      description: 'Get curated daily picks and stay informed with news',
-      icon: <Users className="w-16 h-16 text-pink-500" />,
-      details: [
-        '📰 Daily expert predictions curated for you',
-        '🔔 Breaking sports news and updates',
-        '💬 Engage with the prediction community',
-        '📢 Share your best picks and insights'
-      ],
-      color: 'pink'
+      title: 'THE VAULT',
+      subtitle: 'Secure Your Intel',
+      description: 'Lock in your hunches and track your performance. Every prediction you make is stored in your private, local-first vault.',
+      icon: <Lock className="w-16 h-16 text-green-500" />,
+      highlights: [
+        'Encrypted local persistence',
+        'Performance tracking metrics',
+        'Global Leaderboard ranking'
+      ]
     }
   ];
 
@@ -119,12 +77,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) 
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
   const completeOnboarding = () => {
     localStorage.setItem(
       `oracle_onboarding_completed_${userName}`,
@@ -133,125 +85,73 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) 
     onComplete();
   };
 
-  const handleSkip = () => {
-    setIsSkipped(true);
-    completeOnboarding();
-  };
-
-  const colorClasses: Record<string, string> = {
-    blue: 'from-blue-50 to-blue-100 border-blue-200',
-    purple: 'from-purple-50 to-purple-100 border-purple-200',
-    green: 'from-green-50 to-green-100 border-green-200',
-    amber: 'from-amber-50 to-amber-100 border-amber-200',
-    pink: 'from-pink-50 to-pink-100 border-pink-200'
-  };
-
-  const buttonColorClasses: Record<string, string> = {
-    blue: 'bg-blue-600 hover:bg-blue-700',
-    purple: 'bg-purple-600 hover:bg-purple-700',
-    green: 'bg-green-600 hover:bg-green-700',
-    amber: 'bg-amber-600 hover:bg-amber-700',
-    pink: 'bg-pink-600 hover:bg-pink-700'
-  };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className={`bg-gradient-to-br ${colorClasses[step.color]} rounded-lg shadow-2xl border-2 max-w-2xl w-full p-8 animate-fadeIn`}>
-        {/* Close Button */}
-        <div className="flex justify-between items-start mb-6">
-          <div />
-          <button
-            onClick={handleSkip}
-            className="text-gray-500 hover:text-gray-700 transition"
-            title="Skip onboarding"
-          >
-            <X className="w-6 h-6" />
-          </button>
+    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-in fade-in duration-500">
+      <div className="bg-slate-900 border border-slate-800 rounded-[3rem] shadow-2xl max-w-xl w-full relative overflow-hidden flex flex-col items-center p-10 text-center border-t-4 border-t-green-500">
+
+        {/* Background Gradients */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-500/10 blur-[100px] rounded-full pointer-events-none" />
+
+        <button
+          onClick={completeOnboarding}
+          className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-green-500/20 blur-2xl rounded-full scale-150 animate-pulse" />
+          <div className="relative z-10 bg-slate-950 p-6 rounded-full border border-slate-800 shadow-xl">
+            {step.icon}
+          </div>
         </div>
 
-        {/* Icon */}
-        <div className="flex justify-center mb-6">
-          {step.icon}
-        </div>
-
-        {/* Title and Description */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">
-            {step.title}
-          </h2>
-          <p className="text-gray-600 text-lg">
-            {step.description}
+        <div className="space-y-4 mb-10 w-full">
+          <div>
+            <p className="text-[10px] font-black tracking-[0.3em] text-green-500 uppercase mb-2">{step.subtitle}</p>
+            <h2 className="text-3xl font-black italic text-slate-100 uppercase tracking-tighter leading-none">{step.title}</h2>
+          </div>
+          <p className="text-sm font-bold text-slate-400 leading-relaxed italic px-4">
+            "{step.description}"
           </p>
         </div>
 
-        {/* Details */}
-        <div className="space-y-3 mb-8 bg-white bg-opacity-60 rounded-lg p-6">
-          {step.details.map((detail, idx) => (
-            <div key={idx} className="flex items-start gap-3">
-              <div className={`text-${step.color}-600 font-bold flex-shrink-0 mt-1`}>✓</div>
-              <p className="text-gray-700">{detail}</p>
+        <div className="grid grid-cols-1 gap-3 w-full mb-10 text-left">
+          {step.highlights.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-2xl group hover:border-green-500/50 transition-all">
+              <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />
+              <span className="text-[11px] font-black uppercase italic text-slate-300 group-hover:text-slate-100 transition-colors">{item}</span>
             </div>
           ))}
         </div>
 
-        {/* Step Indicator */}
-        <div className="flex justify-center gap-2 mb-8">
-          {steps.map((_, idx) => (
-            <div
-              key={idx}
-              className={`h-2 rounded-full transition-all ${
-                idx === currentStep
-                  ? `w-8 bg-${step.color}-600`
-                  : idx < currentStep
-                  ? 'w-2 bg-gray-400'
-                  : 'w-2 bg-gray-300'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Navigation */}
-        <div className="flex gap-4 justify-between">
-          <button
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="px-6 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            Previous
-          </button>
-
-          <div className="text-center text-gray-600 font-medium py-3">
-            {currentStep + 1} / {steps.length}
+        <div className="w-full space-y-6">
+          <div className="flex justify-center gap-2">
+            {steps.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1.5 transition-all duration-300 rounded-full ${idx === currentStep ? 'w-10 bg-green-500' : 'w-2 bg-slate-800'}`}
+              />
+            ))}
           </div>
 
           <button
             onClick={handleNext}
-            className={`px-6 py-3 rounded-lg ${buttonColorClasses[step.color]} text-white font-medium flex items-center gap-2 hover:shadow-lg transition`}
+            className="w-full py-5 bg-green-500 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter hover:bg-green-400 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(34,197,94,0.2)]"
           >
-            {currentStep === steps.length - 1 ? (
-              <>
-                Get Started <Check className="w-5 h-5" />
-              </>
-            ) : (
-              <>
-                Next <ArrowRight className="w-5 h-5" />
-              </>
-            )}
+            {currentStep === steps.length - 1 ? 'Unlock System' : 'Acknowledge Data'}
+            <ArrowRight size={20} />
+          </button>
+
+          <button
+            onClick={completeOnboarding}
+            className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
+          >
+            Skip Initialization Sequence
           </button>
         </div>
-
-        {/* Skip Link */}
-        {currentStep !== steps.length - 1 && (
-          <div className="text-center mt-4">
-            <button
-              onClick={handleSkip}
-              className="text-gray-500 hover:text-gray-700 text-sm transition"
-            >
-              Skip tour
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
 };
+

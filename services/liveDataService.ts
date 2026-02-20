@@ -1,7 +1,9 @@
 import { Match, MatchStatus } from "../types";
 import { fetchWithProxy } from "./apiUtils";
 
-const isProd = import.meta.env.PROD;
+
+const isProd = (import.meta as any).env.PROD;
+
 
 const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports";
 const FOOTBALL_DATA_BASE = isProd ? "https://api.football-data.org/v4" : "/api/football-data/v4";
@@ -47,15 +49,25 @@ const statusFromFD = (s: string): MatchStatus => {
   return MatchStatus.UPCOMING;
 };
 
+
 const statusFromESPN = (state: string): MatchStatus => {
   if (state === "post") return MatchStatus.FINISHED;
   if (state === "in") return MatchStatus.LIVE;
   return MatchStatus.UPCOMING;
 };
 
-const fetchAllOdds = async (): Promise<Map<string, OddsLookup>> => {
+let cachedOdds: Map<string, OddsLookup> | null = null;
+let lastOddsFetch = 0;
+const ODDS_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes (odds don't change that fast)
+
+const fetchAllOdds = async (force = false): Promise<Map<string, OddsLookup>> => {
+  const now = Date.now();
+  if (!force && cachedOdds && (now - lastOddsFetch < ODDS_CACHE_DURATION)) {
+    return cachedOdds;
+  }
+
   const result = new Map<string, OddsLookup>();
-  if (!ODDS_API_KEY || isProd) return result; // Skip Odds API in production due to CORS
+  if (!ODDS_API_KEY || isProd) return result;
 
   const fetches = ODDS_SPORT_KEYS.map(async ({ key, competition }) => {
     try {
@@ -88,9 +100,13 @@ const fetchAllOdds = async (): Promise<Map<string, OddsLookup>> => {
       console.error(`Odds API error for ${key}:`, err);
     }
   });
+
   await Promise.all(fetches);
+  cachedOdds = result;
+  lastOddsFetch = Date.now();
   return result;
 };
+
 
 const findOdds = (lookup: OddsLookup | undefined, home: string, away: string, fallback: OddsEntry): OddsEntry => {
   if (!lookup || lookup.size === 0) return fallback;
@@ -333,11 +349,21 @@ const fetchTennisMatches = async (): Promise<Match[]> => {
   }
 };
 
-export const fetchLiveMatches = async (): Promise<Match[]> => {
+
+let cachedLiveMatches: Match[] | null = null;
+let lastLiveFetch = 0;
+const LIVE_CACHE_DURATION = 30 * 1000; // 30 seconds for live data
+
+export const fetchLiveMatches = async (force = false): Promise<Match[]> => {
+  const now = Date.now();
+  if (!force && cachedLiveMatches && (now - lastLiveFetch < LIVE_CACHE_DURATION)) {
+    return cachedLiveMatches;
+  }
+
   const matches: Match[] = [];
 
   try {
-    const oddsMap = await fetchAllOdds();
+    const oddsMap = await fetchAllOdds(force);
 
     // Skip Football Data API in production due to CORS issues
     const fdFootball = isProd ? [] : await fetchFootballFromFD(oddsMap);
@@ -352,9 +378,14 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
     const deduped = espnFootball.filter((m) => !fdCompetitions.has(m.competition));
 
     matches.push(...fdFootball, ...deduped, ...nba, ...tennis);
+
+    cachedLiveMatches = matches;
+    lastLiveFetch = Date.now();
   } catch (error) {
     console.error("Error fetching live data:", error);
+    return cachedLiveMatches || []; // Fallback to cache if error
   }
 
   return matches;
 };
+
