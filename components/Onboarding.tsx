@@ -8,7 +8,8 @@ import {
   Wifi,
   LayoutGrid,
   User as UserIcon,
-  X
+  MessageSquare,
+  Activity
 } from 'lucide-react';
 
 interface OnboardingProps {
@@ -40,28 +41,35 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) 
       id: 'categories',
       targetId: 'walkthrough-categories',
       title: 'SECTOR ANALYSIS',
-      description: 'Switch between Football, Basketball, and Tennis. Each sector has specialized AI models trained on specific league data.',
+      description: 'Switch between Football, Basketball, and Tennis. each sector has specialized AI models.',
       icon: <LayoutGrid className="text-green-500" />
     },
     {
-      id: 'lobby',
-      targetId: 'walkthrough-lobby',
-      title: 'ORACLE FEED',
-      description: 'Browse the live feed of matches. Pulsing indicators show games currently being played in real-time.',
+      id: 'match_selection',
+      targetId: 'walkthrough-match-card',
+      title: 'TARGET SELECTION',
+      description: 'Tap on any match card to open the analysis interface. This initializes the connection for that specific sporting event.',
       icon: <Target className="text-green-500" />
     },
     {
-      id: 'refresh',
-      targetId: 'walkthrough-refresh',
-      title: 'LIVE SYNC',
-      description: 'Need the absolute latest? Use the Live Refresh to manually sync with our global sport data providers.',
-      icon: <Wifi className="text-green-500" />
+      id: 'hunch',
+      targetId: 'walkthrough-hunch',
+      title: 'HUMAN INTEL',
+      description: 'Input your "hunch" or reasoning here. Your local context directly influences the AI reasoning—it uses your notes to look for specific evidence during the search grounding phase.',
+      icon: <MessageSquare className="text-green-500" />
+    },
+    {
+      id: 'analyze',
+      targetId: 'walkthrough-analyze',
+      title: 'DEEP SCAN SEQUENCING',
+      description: 'When you trigger the analysis, the status will show real-time processing. Because the AI is scraping injury reports, social sentiment, and live stats, this deep scan can take up to a minute.',
+      icon: <Activity className="text-green-500" />
     },
     {
       id: 'betslip',
       targetId: 'walkthrough-betslip',
       title: 'GEMINI COMMLINK',
-      description: 'The Bet Slip is where you talk to the Oracle. Select markets, add your hunches, and run deep AI scans.',
+      description: 'The final report appears in the Bet Slip. The AI cross-references your hunch with market data to provide a verified verdict.',
       icon: <Zap className="text-green-500" />
     }
   ];
@@ -130,7 +138,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) 
   // Tooltip positioning
   const tooltipStyle: React.CSSProperties = targetRect ? {
     position: 'fixed',
-    top: targetRect.bottom + 20 > window.innerHeight - 250 ? Math.max(20, targetRect.top - 200) : targetRect.bottom + 20,
+    top: targetRect.bottom + 20 > window.innerHeight - 300 ? Math.max(20, targetRect.top - 220) : targetRect.bottom + 20,
     left: Math.min(Math.max(20, targetRect.left + targetRect.width / 2 - 160), window.innerWidth - 340),
   } : {};
 

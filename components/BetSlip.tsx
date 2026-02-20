@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Zap, PlusCircle, Check, Target } from 'lucide-react';
+import { Loader2, Zap, PlusCircle, Check, Target, Activity, Database, Search, ShieldCheck } from 'lucide-react';
 import { Match, MatchStatus, AIAnalysis, PlayerProp, PlayerMarket } from '../types';
 
 interface BetSlipProps {
@@ -114,6 +114,7 @@ export const BetSlip: React.FC<BetSlipProps> = ({
 
                 <div className="relative">
                     <textarea
+                        id="walkthrough-hunch"
                         value={userPrediction}
                         onChange={(e) => setUserPrediction(e.target.value.slice(0, 1000))}
                         placeholder="Personal notes/hunch (e.g. key injuries, weather)..."
@@ -126,9 +127,71 @@ export const BetSlip: React.FC<BetSlipProps> = ({
                     )}
                 </div>
 
-                <button onClick={runAnalysis} disabled={isLoading} className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter shadow-xl transition-all">
-                    {isLoading ? <div className="flex flex-col items-center"><Loader2 className="animate-spin mb-1" size={16} /><span className="text-[8px]">{loadingMessages[loadingMsgIdx]}</span></div> : 'ANALYZE SELECTIONS'}
+
+                <button
+                    id="walkthrough-analyze"
+                    onClick={runAnalysis}
+                    disabled={isLoading}
+                    className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-950 font-black rounded-2xl uppercase italic tracking-tighter shadow-xl transition-all relative overflow-hidden group"
+                >
+                    {isLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="animate-spin" size={18} />
+                            <span>DECRYPTING DATA...</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center gap-2">
+                            <span>ANALYZE SELECTIONS</span>
+                        </div>
+                    )}
                 </button>
+
+                {isLoading && (
+                    <div className="space-y-3 p-4 bg-slate-950 border border-green-500/20 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-500">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <div className="flex items-center gap-2">
+                                <Activity size={12} className="text-green-500 animate-pulse" />
+                                <span className="text-[9px] font-black text-slate-100 uppercase tracking-[0.2em]">Oracle Scanner</span>
+                            </div>
+                            <div className="flex gap-1">
+                                <div className="w-1 h-1 bg-green-500 rounded-full animate-ping" />
+                                <span className="text-[7px] font-black text-green-500 italic uppercase">Sync Active</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            {[
+                                { label: 'ESPN LIVE FEED', icon: <Database size={10} />, stage: 0 },
+                                { label: 'PRIZEPICKS API', icon: <Search size={10} />, stage: 1 },
+                                { label: 'SENTIMENT MATRIX', icon: <Target size={10} />, stage: 2 },
+                                { label: 'GEMINI REASONING', icon: <Zap size={10} />, stage: 3 },
+                                { label: 'VAULT VERIFICATION', icon: <ShieldCheck size={10} />, stage: 4 }
+                            ].map((s, i) => (
+                                <div key={i} className="flex items-center justify-between group">
+                                    <div className={`flex items-center gap-2 transition-colors duration-300 ${loadingMsgIdx >= s.stage ? 'text-green-500' : 'text-slate-600'}`}>
+                                        {s.icon}
+                                        <span className="text-[8px] font-black uppercase tracking-tighter italic">{s.label}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {loadingMsgIdx > s.stage ? (
+                                            <Check size={8} className="text-green-500" />
+                                        ) : loadingMsgIdx === s.stage ? (
+                                            <span className="text-[7px] font-bold text-slate-300 animate-pulse uppercase">Scanning...</span>
+                                        ) : (
+                                            <div className="w-1 h-1 bg-slate-800 rounded-full" />
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="pt-2 mt-2 border-t border-slate-800">
+                            <p className="text-[10px] text-slate-400 font-bold italic text-center animate-pulse">
+                                "{loadingMessages[loadingMsgIdx]}"
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {aiAnalysis && (
                     <div className="pt-6 space-y-4 border-t border-slate-800 animate-in slide-in-from-bottom-2 duration-300 pb-4">

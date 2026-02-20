@@ -433,8 +433,14 @@ const App: React.FC = () => {
               </div>
 
               <div id="walkthrough-lobby" className="grid grid-cols-1 gap-4">
-                {filteredMatches.map(match => (
-                  <div key={match.id} onClick={() => handleSelectMatch(match)} className={`group bg-slate-900 border ${activeMatch?.id === match.id ? 'border-green-500 ring-4 ring-green-500/10' : 'border-slate-800'} rounded-2xl p-6 cursor-pointer transition-all hover:border-slate-700 shadow-xl relative overflow-hidden`}>
+
+                {filteredMatches.map((match, idx) => (
+                  <div
+                    key={match.id}
+                    id={idx === 0 ? 'walkthrough-match-card' : undefined}
+                    onClick={() => handleSelectMatch(match)}
+                    className={`group bg-slate-900 border ${activeMatch?.id === match.id ? 'border-green-500 ring-4 ring-green-500/10' : 'border-slate-800'} rounded-2xl p-6 cursor-pointer transition-all hover:border-slate-700 shadow-xl relative overflow-hidden`}
+                  >
                     <div className="flex justify-between items-center mb-6 opacity-60 text-[10px] font-black uppercase tracking-tighter">
                       <span className="flex items-center gap-2">
                         {match.competition}
