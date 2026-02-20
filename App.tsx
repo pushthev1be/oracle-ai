@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout';
 import { BetSlip } from './components/BetSlip';
+import { Onboarding } from './components/Onboarding';
 import { SportType, Match, PlayerProp, AIAnalysis, PastSlip, PlayerMarket, SlipStatus, MatchStatus, DashboardStats, LeaderboardUser, UserProfile, NewsPost, PlatformType, Team, DailyPrediction } from './types';
 import { COMPETITIONS, MOCK_MATCHES, MOCK_LEADERBOARD, MOCK_NEWS } from './constants';
 import {
@@ -43,6 +44,7 @@ const App: React.FC = () => {
   // User Authentication State
   const [user, setUser] = useState<UserProfile | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [signUpName, setSignUpName] = useState('');
   const [signUpPin, setSignUpPin] = useState('');
   const [authError, setAuthError] = useState('');
@@ -140,7 +142,15 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('oracle_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      // Check if user has completed onboarding
+      const onboardingKey = `oracle_onboarding_completed_${parsedUser.username}`;
+      const hasCompletedOnboarding = localStorage.getItem(onboardingKey);
+      // Show onboarding if not yet completed
+      if (!hasCompletedOnboarding) {
+        setShowOnboarding(true);
+      }
     } else {
       setShowSignUp(true);
     }
@@ -186,6 +196,7 @@ const App: React.FC = () => {
     const name = signUpName.trim();
     const nameLower = name.toLowerCase();
     const registry = getGlobalRegistry();
+    const isNewUser = !registry[nameLower];
 
     if (isUsernameTaken) {
       const existingUser = registry[nameLower];
@@ -216,6 +227,8 @@ const App: React.FC = () => {
       setShowSignUp(false);
       setSignUpName('');
       setSignUpPin('');
+      // Show onboarding for new users
+      setShowOnboarding(true);
     }
   };
 
@@ -815,6 +828,14 @@ const App: React.FC = () => {
           <span className="text-[9px] font-bold uppercase tracking-tight">Rank</span>
         </button>
       </div>
+
+      {/* Onboarding Modal */}
+      {showOnboarding && user && (
+        <Onboarding
+          userName={user.username}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
     </Layout>
   );
 };
