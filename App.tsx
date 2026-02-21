@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import { BetSlip } from './components/BetSlip';
 import { Onboarding } from './components/Onboarding';
 import { SportType, Match, PlayerProp, AIAnalysis, PastSlip, PlayerMarket, SlipStatus, MatchStatus, DashboardStats, LeaderboardUser, UserProfile, NewsPost, PlatformType, Team, DailyPrediction } from './types';
+import { QuickSlip } from './components/QuickSlip';
 import { COMPETITIONS, MOCK_MATCHES, MOCK_LEADERBOARD, MOCK_NEWS } from './constants';
 import {
   ChevronRight, Search, Dribbble, Flame, CircleDot, Loader2, Target, Sparkles,
@@ -11,10 +12,12 @@ import {
   FileText, Users, Zap, ArrowUp, ArrowDown, LayoutDashboard, CheckCircle2,
   XCircle, TrendingUp, Wallet, Award, Medal, User as UserIcon, RefreshCw, LogOut,
   Newspaper, Twitter, Share2, MessageSquare, Heart, Music, LayoutGrid, Lock, Filter,
-  PlusCircle, MinusCircle, Check, Radio, Info, Calendar, Wifi
+  PlusCircle, MinusCircle, Check, Radio, Info, Calendar, Wifi, BarChart3, Activity
 } from 'lucide-react';
 import { getAIAnalysis } from './services/geminiService';
 import { fetchLiveMatches } from './services/liveDataService';
+import { trackEvent, AnalyticsEvents } from './services/analyticsService';
+import { getGlobalLiveStats } from './services/cacheService';
 
 const LOADING_MESSAGES = [
   "Scraping live team news...",
@@ -64,6 +67,36 @@ const App: React.FC = () => {
   // Daily Predictions State
   const [dailyPredictions, setDailyPredictions] = useState<DailyPrediction[]>([]);
   const [isGeneratingDaily, setIsGeneratingDaily] = useState(false);
+  const [globalStats, setGlobalStats] = useState<{ count: number; recent: any[] }>({ count: 0, recent: [] });
+
+  // Poll for global stats every 30s
+  useEffect(() => {
+    const fetchGlobal = async () => {
+      const stats = await getGlobalLiveStats();
+      setGlobalStats(stats);
+    };
+
+    fetchGlobal();
+    const interval = setInterval(fetchGlobal, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // QuickSlip State
+  const [quickSlipMatches, setQuickSlipMatches] = useState<Match[]>([]);
+  const [showQuickSlip, setShowQuickSlip] = useState(false);
+
+  const addToQuickSlip = (match: Match) => {
+    if (quickSlipMatches.find(m => m.id === match.id)) return;
+    if (quickSlipMatches.length >= 7) {
+      alert("QuickSlip is limited to 7 matches for high-speed processing.");
+      return;
+    }
+    setQuickSlipMatches([...quickSlipMatches, match]);
+  };
+
+  const removeFromQuickSlip = (id: string) => {
+    setQuickSlipMatches(quickSlipMatches.filter(m => m.id !== id));
+  };
 
   useEffect(() => {
     // Check for cached daily predictions
@@ -175,7 +208,7 @@ const App: React.FC = () => {
   }, []);
 
   // Vault Sync
-  useEffect(() => {
+  const syncVault = () => {
     if (user) {
       const storageKey = `oracle_vault_${user.username.toLowerCase()}`;
       const savedSlips = localStorage.getItem(storageKey);
@@ -185,10 +218,12 @@ const App: React.FC = () => {
         } catch (e) {
           setPastSlips([]);
         }
-      } else {
-        setPastSlips([]);
       }
     }
+  };
+
+  useEffect(() => {
+    syncVault();
   }, [user]);
 
   // Auth Handling
@@ -205,6 +240,7 @@ const App: React.FC = () => {
       if (existingUser.pin === signUpPin) {
         localStorage.setItem('oracle_user', JSON.stringify(existingUser));
         setUser(existingUser);
+        trackEvent(AnalyticsEvents.AUTH_SUCCESS, { username: name, is_new_user: false });
         setShowSignUp(false);
         setSignUpName('');
         setSignUpPin('');
@@ -226,6 +262,7 @@ const App: React.FC = () => {
       localStorage.setItem('oracle_global_registry', JSON.stringify(registry));
       localStorage.setItem('oracle_user', JSON.stringify(newUser));
       setUser(newUser);
+      trackEvent(AnalyticsEvents.AUTH_SUCCESS, { username: name, is_new_user: true });
       setShowSignUp(false);
       setSignUpName('');
       setSignUpPin('');
@@ -236,6 +273,7 @@ const App: React.FC = () => {
 
   const handleSignOut = () => {
     if (confirm("Sign out of the Oracle network?")) {
+      trackEvent(AnalyticsEvents.AUTH_LOGOUT, { username: user?.username });
       localStorage.removeItem('oracle_user');
       setUser(null);
       setPastSlips([]);
@@ -276,6 +314,11 @@ const App: React.FC = () => {
     setAiAnalysis(null);
     setUserPrediction('');
     setPlayerProps([]);
+    trackEvent(AnalyticsEvents.MATCH_SELECTED, {
+      match_id: match.id,
+      competition: match.competition,
+      match_name: `${match.homeTeam.name} vs ${match.awayTeam.name}`
+    });
     setViewMode('active');
   };
 
@@ -293,6 +336,13 @@ const App: React.FC = () => {
     setIsLoading(true);
     setLoadingMsgIdx(0);
     setAiAnalysis(null);
+
+    trackEvent(AnalyticsEvents.SEARCH_GROUNDED_ANALYSIS, {
+      match_id: activeMatch.id,
+      match_name: `${activeMatch.homeTeam.name} vs ${activeMatch.awayTeam.name}`,
+      hunch_length: userPrediction.length,
+      props_count: playerProps.length
+    });
 
     // Cycle through loading messages faster
     const loadingInterval = setInterval(() => {
@@ -377,6 +427,9 @@ const App: React.FC = () => {
               <button onClick={() => setViewMode('active')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'active' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
                 <LayoutGrid size={20} /> <span className="font-semibold">Lobby</span>
               </button>
+              <button onClick={() => setViewMode('dashboard')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'dashboard' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
+                <Activity size={20} /> <span className="font-semibold">Live Dashboard</span>
+              </button>
               <button onClick={() => setViewMode('fixtures')} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode === 'fixtures' ? 'bg-slate-800 text-green-400' : 'text-slate-300 hover:bg-slate-800'}`}>
                 <Calendar size={20} /> <span className="font-semibold">Fixtures</span>
               </button>
@@ -438,46 +491,58 @@ const App: React.FC = () => {
                   <div
                     key={match.id}
                     id={idx === 0 ? 'walkthrough-match-card' : undefined}
-                    onClick={() => handleSelectMatch(match)}
                     className={`group bg-slate-900 border ${activeMatch?.id === match.id ? 'border-green-500 ring-4 ring-green-500/10' : 'border-slate-800'} rounded-2xl p-6 cursor-pointer transition-all hover:border-slate-700 shadow-xl relative overflow-hidden`}
                   >
-                    <div className="flex justify-between items-center mb-6 opacity-60 text-[10px] font-black uppercase tracking-tighter">
-                      <span className="flex items-center gap-2">
-                        {match.competition}
-                        {match.status === MatchStatus.LIVE && (
-                          <span className="flex items-center gap-1 bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full border border-red-500/20">
-                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                            LIVE
-                          </span>
-                        )}
-                        {match.status === MatchStatus.FINISHED && (
-                          <span className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">
-                            FINISHED
-                          </span>
-                        )}
-                      </span>
-                      <span>{match.date}</span>
+                    <div onClick={() => handleSelectMatch(match)}>
+                      <div className="flex justify-between items-center mb-6 opacity-60 text-[10px] font-black uppercase tracking-tighter">
+                        <span className="flex items-center gap-2">
+                          {match.competition}
+                          {match.status === MatchStatus.LIVE && (
+                            <span className="flex items-center gap-1 bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full border border-red-500/20">
+                              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                              LIVE
+                            </span>
+                          )}
+                        </span>
+                        <span>{match.date}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="text-center flex-1">
+                          <img src={match.homeTeam.logo} className="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-slate-800 bg-slate-950 p-1" />
+                          <p className="font-black text-sm uppercase italic">{match.homeTeam.name}</p>
+                          {match.status === MatchStatus.UPCOMING ? (
+                            <p className="text-[10px] text-green-500 font-bold">{match.odds.home.toFixed(2)}</p>
+                          ) : (
+                            <p className="text-2xl font-black text-white mt-1">{match.result?.homeScore}</p>
+                          )}
+                        </div>
+                        <div className="px-6 text-2xl font-black italic text-slate-800">VS</div>
+                        <div className="text-center flex-1">
+                          <img src={match.awayTeam.logo} className="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-slate-800 bg-slate-950 p-1" />
+                          <p className="font-black text-sm uppercase italic">{match.awayTeam.name}</p>
+                          {match.status === MatchStatus.UPCOMING ? (
+                            <p className="text-[10px] text-green-500 font-bold">{match.odds.away.toFixed(2)}</p>
+                          ) : (
+                            <p className="text-2xl font-black text-white mt-1">{match.result?.awayScore}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-center flex-1">
-                        <img src={match.homeTeam.logo} className="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-slate-800 bg-slate-950 p-1" />
-                        <p className="font-black text-sm uppercase italic">{match.homeTeam.name}</p>
-                        {match.status === MatchStatus.UPCOMING ? (
-                          <p className="text-[10px] text-green-500 font-bold">{match.odds.home.toFixed(2)}</p>
-                        ) : (
-                          <p className="text-2xl font-black text-white mt-1">{match.result?.homeScore}</p>
-                        )}
-                      </div>
-                      <div className="px-6 text-2xl font-black italic text-slate-800">VS</div>
-                      <div className="text-center flex-1">
-                        <img src={match.awayTeam.logo} className="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-slate-800 bg-slate-950 p-1" />
-                        <p className="font-black text-sm uppercase italic">{match.awayTeam.name}</p>
-                        {match.status === MatchStatus.UPCOMING ? (
-                          <p className="text-[10px] text-green-500 font-bold">{match.odds.away.toFixed(2)}</p>
-                        ) : (
-                          <p className="text-2xl font-black text-white mt-1">{match.result?.awayScore}</p>
-                        )}
-                      </div>
+
+                    <div className="flex gap-2 pt-4 mt-4 border-t border-slate-800/50">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleSelectMatch(match); }}
+                        className="flex-1 py-3 bg-slate-950 border border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-green-500 transition-all flex items-center justify-center gap-2"
+                      >
+                        <FileText size={12} /> SCAN
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addToQuickSlip(match); }}
+                        className={`flex-1 py-3 ${quickSlipMatches.find(m => m.id === match.id) ? 'bg-green-500 text-slate-950 border-green-500' : 'bg-green-500/10 border-green-500/30 text-green-500'} rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-green-500 hover:text-slate-950 transition-all flex items-center justify-center gap-2`}
+                      >
+                        <Zap size={12} fill="currentColor" /> {quickSlipMatches.find(m => m.id === match.id) ? 'IN SLIP' : 'QUICKSLIP+'}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -485,23 +550,191 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {viewMode === 'history' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><History className="text-green-500" /> Private Vault</h2>
-              {pastSlips.length > 0 ? (
-                pastSlips.map(slip => (
-                  <div key={slip.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-black text-slate-100 uppercase italic">{slip.match.homeTeam.name} vs {slip.match.awayTeam.name}</span>
-                      <span className="text-[10px] font-black text-slate-500">{new Date(slip.timestamp).toLocaleDateString()}</span>
+          {viewMode === 'dashboard' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><BarChart3 className="text-green-500" /> Global Pulse</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Live Network Activity</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-xl relative overflow-hidden group">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[.2em] mb-2">Total Analyses</p>
+                  <p className="text-4xl font-black italic text-slate-100">{globalStats.count}</p>
+                  <p className="text-[9px] font-bold text-green-500 mt-2 uppercase flex items-center gap-1"><TrendingUp size={10} /> +{Math.max(1, Math.floor(globalStats.count * 0.1))} avg/day</p>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-xl relative overflow-hidden group">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[.2em] mb-2">Confidence Yield</p>
+                  <p className="text-4xl font-black italic text-green-500">${(globalStats.count * 42.5).toLocaleString()}</p>
+                  <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase">Global Simulation</p>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-xl relative overflow-hidden group">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[.2em] mb-2">Latency</p>
+                  <p className="text-4xl font-black italic text-slate-100">24ms</p>
+                  <p className="text-[9px] font-bold text-blue-400 mt-2 uppercase">Supabase Fast-Path</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-lg font-black italic uppercase text-slate-100 tracking-tighter">Live Analysis Stream</h3>
+                  <RefreshCw size={16} className="text-slate-700 animate-spin" />
+                </div>
+
+                <div className="space-y-4">
+                  {globalStats.recent.length > 0 ? (
+                    globalStats.recent.map((item, i) => (
+                      <div key={i} className="flex items-center gap-4 p-4 bg-slate-950 border border-slate-800/50 rounded-2xl hover:border-slate-700 transition-all group">
+                        <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
+                          <Activity size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start">
+                            <p className="text-xs font-black text-slate-100 uppercase italic truncate">
+                              {item.data?.match?.homeTeam?.name || 'Unknown'} vs {item.data?.match?.awayTeam?.name || 'Unknown'}
+                            </p>
+                            <span className="text-[8px] font-black text-slate-600 uppercase tabular-nums">{item.created_at ? new Date(item.created_at).toLocaleTimeString() : '--:--'}</span>
+                          </div>
+                          <p className="text-[9px] font-bold text-slate-500 truncate mt-1 italic">
+                            "{item.data?.prediction || 'New Analysis Found'}"
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-10 opacity-20 italic font-black uppercase text-sm">
+                      Awaiting Global Signal...
                     </div>
-                    <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-black text-green-400 italic">Prediction: {slip.analysis.prediction}</div>
-                  </div>
-                ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {viewMode === 'history' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black italic uppercase text-slate-100 flex items-center gap-2"><History className="text-green-500" /> Private Vault</h2>
+                <button
+                  onClick={syncVault}
+                  className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-green-400 transition-colors"
+                  title="Sync Vault"
+                >
+                  <RefreshCw size={18} />
+                </button>
+              </div>
+
+              {pastSlips.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {pastSlips.map(slip => (
+                    <div key={slip.id} className="bg-[#f8f9fa] text-slate-950 rounded-[2rem] border-4 border-black shadow-2xl overflow-hidden flex flex-col transform hover:rotate-1 transition-transform">
+                      {/* Receipt Header */}
+                      <div className="p-4 border-b-2 border-dashed border-slate-300 text-center bg-white">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">
+                          {slip.isBatch ? 'Oracle Compiled Receipt' : 'Oracle Single Receipt'}
+                        </p>
+                        <p className="text-[8px] font-bold text-slate-400 tabular-nums uppercase">{new Date(slip.timestamp).toLocaleString()}</p>
+                      </div>
+
+                      {/* Content Area */}
+                      <div className="p-6 space-y-6 flex-1">
+                        {slip.isBatch ? (
+                          // BATCH RENDERING
+                          slip.matches?.map((item, idx) => (
+                            <div key={idx} className="space-y-3 pb-4 border-b border-slate-200 last:border-0 last:pb-0">
+                              <div className="flex justify-between items-start">
+                                <span className="text-[7px] font-black bg-black text-white px-2 py-0.5 rounded italic uppercase">
+                                  {item.match?.competition || 'Event'}
+                                </span>
+                                <span className="text-[8px] font-black uppercase text-slate-400 italic">Game 0{idx + 1}</span>
+                              </div>
+                              <p className="text-xs font-black uppercase italic leading-tight">
+                                {item.match?.homeTeam?.name || 'Unknown'} vs {item.match?.awayTeam?.name || 'Unknown'}
+                              </p>
+
+                              <div className="space-y-1.5 pl-2 border-l-2 border-green-500/20">
+                                {item.analysis?.quickPicks?.slice(0, 2).map((pick, pIdx) => (
+                                  <div key={pIdx} className="flex justify-between items-baseline">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[7px] font-black text-slate-400 uppercase">{pick.category}</span>
+                                      <p className="text-[9px] font-black text-slate-900 uppercase italic leading-none">{pick.market}</p>
+                                    </div>
+                                    <span className="text-[9px] font-black text-green-600 uppercase italic">{pick.selection}</span>
+                                  </div>
+                                ))}
+                                {(!item.analysis?.quickPicks || item.analysis.quickPicks.length === 0) && (
+                                  <p className="text-[9px] font-black text-green-600 uppercase italic">{item.analysis?.suggestedPlay || 'Market Verification Active'}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          // SINGLE RENDERING (Legacy/Fallback)
+                          <div className="space-y-4">
+                            <div className="border-b border-slate-200 pb-4">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-[8px] font-black bg-black text-white px-2 py-0.5 rounded italic uppercase">
+                                  {slip.match?.competition || 'Sport Event'}
+                                </span>
+                                <span className="text-[7px] font-black text-slate-400 uppercase">ID: {slip.id.slice(0, 6)}</span>
+                              </div>
+                              <p className="text-sm font-black uppercase italic leading-tight">
+                                {slip.match?.homeTeam?.name || 'Unknown'} vs {slip.match?.awayTeam?.name || 'Unknown'}
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Verified Logic</p>
+                              <div className="p-3 bg-white border-2 border-slate-100 rounded-xl">
+                                <p className="text-[10px] font-black text-green-600 uppercase italic">
+                                  {slip.analysis?.prediction || 'Standard Analysis'}
+                                </p>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">Suggested: {slip.analysis?.suggestedPlay || 'Market Pick'}</p>
+                              </div>
+                            </div>
+
+                            {slip.playerProps && slip.playerProps.length > 0 && (
+                              <div className="pt-2 border-t border-dotted border-slate-200">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-2">Market Props</p>
+                                <div className="space-y-1">
+                                  {slip.playerProps.map((prop, pIdx) => (
+                                    <div key={pIdx} className="flex justify-between text-[9px] font-bold">
+                                      <span className="uppercase">{prop.player} ({prop.type})</span>
+                                      <span className="text-green-600 font-black">{prop.value} {prop.choice}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Barcode Footer */}
+                      <div className="px-6 py-4 bg-white border-t-2 border-dashed border-slate-200">
+                        <div className="flex justify-center items-end h-4 gap-[1px] opacity-40">
+                          {Array.from({ length: 30 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="bg-black"
+                              style={{ width: '1px', height: `${50 + Math.random() * 50}%` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-20 bg-slate-900/50 rounded-3xl border border-slate-800 border-dashed">
                   <FileText className="mx-auto text-slate-800 mb-4" size={48} />
                   <p className="text-slate-500 font-bold uppercase italic tracking-tighter">Your vault is empty</p>
+                  <p className="text-[10px] text-slate-700 uppercase mt-2">Any match you analyze will appear here</p>
                 </div>
               )}
             </div>
@@ -822,6 +1055,10 @@ const App: React.FC = () => {
           <LayoutGrid size={20} />
           <span className="text-[9px] font-bold uppercase tracking-tight">Lobby</span>
         </button>
+        <button onClick={() => setViewMode('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'dashboard' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
+          <Activity size={20} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Live</span>
+        </button>
         <button onClick={() => setViewMode('fixtures')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${viewMode === 'fixtures' ? 'text-green-500 bg-green-500/10' : 'text-slate-400'}`}>
           <Calendar size={20} />
           <span className="text-[9px] font-bold uppercase tracking-tight">Fixtures</span>
@@ -839,6 +1076,49 @@ const App: React.FC = () => {
           <span className="text-[9px] font-bold uppercase tracking-tight">Rank</span>
         </button>
       </div>
+
+      {/* QuickSlip Floating Trigger */}
+      {quickSlipMatches.length > 0 && !showQuickSlip && (
+        <button
+          onClick={() => setShowQuickSlip(true)}
+          className="fixed bottom-24 right-6 lg:bottom-10 lg:right-10 bg-white border-4 border-black p-4 shadow-[10px_10px_0_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all z-[100] group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="bg-black text-white px-2 py-1 text-[10px] font-black italic">SLIP</div>
+            <div className="text-slate-950 font-black italic text-xl">{quickSlipMatches.length} / 7</div>
+            <Zap size={20} className="text-green-600 animate-pulse" fill="currentColor" />
+          </div>
+        </button>
+      )}
+
+      {/* QuickSlip Modal */}
+      {showQuickSlip && (
+        <QuickSlip
+          matches={quickSlipMatches}
+          onRemove={removeFromQuickSlip}
+          onClose={() => setShowQuickSlip(false)}
+          onClear={() => setQuickSlipMatches([])}
+          onSaveAnalyses={(batchResults) => {
+            if (!user) return;
+            const consolidatedSlip: PastSlip = {
+              id: Math.random().toString(36).substr(2, 9),
+              timestamp: Date.now(),
+              isBatch: true,
+              matches: Object.entries(batchResults).map(([matchId, analysis]) => ({
+                match: quickSlipMatches.find(m => m.id === matchId)!,
+                analysis: analysis as AIAnalysis,
+                playerProps: [] // Batch analysis is usually standalone without user props
+              })),
+              status: SlipStatus.PENDING
+            };
+            const updatedHistory = [consolidatedSlip, ...pastSlips];
+            setPastSlips(updatedHistory);
+            const storageKey = `oracle_vault_${user.username.toLowerCase()}`;
+            localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
+          }}
+        />
+      )}
+
 
       {/* Onboarding Modal */}
       {showOnboarding && user && (

@@ -9,8 +9,15 @@ import {
   LayoutGrid,
   User as UserIcon,
   MessageSquare,
-  Activity
+  Activity,
+  ChevronRight,
+  X,
+  Trophy,
+  ShieldAlert,
+  Search,
+  RefreshCw
 } from 'lucide-react';
+import { trackEvent, AnalyticsEvents } from '../services/analyticsService';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -95,11 +102,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) 
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      trackEvent(AnalyticsEvents.ONBOARDING_COMPLETED);
       onComplete();
     }
   };
 
-  const skip = () => onComplete();
+  const skip = () => {
+    trackEvent(AnalyticsEvents.ONBOARDING_SKIPPED, { step_at_skip: currentStep });
+    onComplete();
+  };
 
   // Welcome Screen
   if (currentStep === -1) {
@@ -128,11 +139,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userName }) 
 
   // SVG Mask for Spotlight
   const maskPath = targetRect
-    ? `M 0 0 h ${window.innerWidth} v ${window.innerHeight} h -${window.innerWidth} Z 
-       M ${targetRect.left - 8} ${targetRect.top - 8} 
-       h ${targetRect.width + 16} 
-       v ${targetRect.height + 16} 
-       h -${targetRect.width + 16} Z`
+    ? `M 0 0 h ${window.innerWidth} v ${window.innerHeight} h -${window.innerWidth} Z M ${targetRect.left - 8} ${targetRect.top - 8} h ${targetRect.width + 16} v ${targetRect.height + 16} h -${targetRect.width + 16} Z`
     : `M 0 0 h ${window.innerWidth} v ${window.innerHeight} h -${window.innerWidth} Z`;
 
   // Tooltip positioning

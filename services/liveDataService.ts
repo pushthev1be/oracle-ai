@@ -57,8 +57,10 @@ const statusFromESPN = (state: string): MatchStatus => {
 };
 
 let cachedOdds: Map<string, OddsLookup> | null = null;
+const ODDS_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 let lastOddsFetch = 0;
-const ODDS_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes (odds don't change that fast)
+let oddsApiUnauthorized = false;
+let oddsApiCooldownUntil = 0;
 
 const fetchAllOdds = async (force = false): Promise<Map<string, OddsLookup>> => {
   const now = Date.now();
@@ -67,14 +69,37 @@ const fetchAllOdds = async (force = false): Promise<Map<string, OddsLookup>> => 
   }
 
   const result = new Map<string, OddsLookup>();
-  if (!ODDS_API_KEY || isProd) return result;
+  if (!ODDS_API_KEY || isProd) {
+    if (!ODDS_API_KEY && !isProd) console.error("ODDS_API_KEY is missing. Odds data will not be available.");
+    return result;
+  }
 
-  const fetches = ODDS_SPORT_KEYS.map(async ({ key, competition }) => {
+  if (oddsApiUnauthorized) {
+    console.warn("Odds API is unauthorized (401). Please check/verify your API key.");
+    return result;
+  }
+  if (Date.now() < oddsApiCooldownUntil) {
+    console.warn("Odds API is cooling down...");
+    return result;
+  }
+
+  // Process sequentially to be gentler on the API quota
+  for (const { key, competition } of ODDS_SPORT_KEYS) {
     try {
       const res = await fetchWithProxy(
-        `${ODDS_API_BASE}/sports/${key}/odds/?apiKey=${ODDS_API_KEY}&regions=uk&markets=h2h&oddsFormat=decimal`
+        `${ODDS_API_BASE}/sports/${key}/odds?apiKey=${ODDS_API_KEY}&regions=uk&markets=h2h&oddsFormat=decimal`
       );
-      if (!res.ok) return;
+
+      if (res.status === 401) {
+        oddsApiUnauthorized = true;
+        break;
+      }
+      if (res.status === 429) {
+        oddsApiCooldownUntil = Date.now() + 60000;
+        break;
+      }
+      if (!res.ok) continue;
+
       const events: Record<string, unknown>[] = await res.json();
       const lookup: OddsLookup = new Map();
       for (const event of events) {
@@ -99,9 +124,7 @@ const fetchAllOdds = async (force = false): Promise<Map<string, OddsLookup>> => 
     } catch (err) {
       console.error(`Odds API error for ${key}:`, err);
     }
-  });
-
-  await Promise.all(fetches);
+  }
   cachedOdds = result;
   lastOddsFetch = Date.now();
   return result;
@@ -127,7 +150,7 @@ const fetchFootballFromFD = async (oddsMap: Map<string, OddsLookup>): Promise<Ma
     const today = new Date();
     const dateFrom = today.toISOString().split("T")[0];
     const futureDate = new Date(today);
-    futureDate.setDate(futureDate.getDate() + 14);
+    futureDate.setDate(futureDate.getDate() + 10);
     const dateTo = futureDate.toISOString().split("T")[0];
     const res = await fetchWithProxy(`${FOOTBALL_DATA_BASE}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
       headers: { "X-Auth-Token": FOOTBALL_DATA_API_KEY },
@@ -213,7 +236,7 @@ const fetchFootballFromESPN = async (oddsMap: Map<string, OddsLookup>): Promise<
           homeTeam: {
             id: `t_espn_${homeTeam?.id ?? home.id}`,
             name: (homeTeam?.displayName as string) ?? "TBD",
-            logo: (homeTeam?.logo as string) ?? `https://api.dicebear.com/7.x/identicon/svg?seed=${homeTeam?.id}`,
+            logo: (homeTeam?.logo as string) || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent((homeTeam?.displayName as string) || 'TBD')}`,
           },
           awayTeam: {
             id: `t_espn_${awayTeam?.id ?? away.id}`,

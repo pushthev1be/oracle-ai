@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Zap, PlusCircle, Check, Target, Activity, Database, Search, ShieldCheck } from 'lucide-react';
+import { Loader2, Zap, PlusCircle, Check, Target, Activity, Database, Search, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Match, MatchStatus, AIAnalysis, PlayerProp, PlayerMarket } from '../types';
 
 interface BetSlipProps {
@@ -199,6 +199,39 @@ export const BetSlip: React.FC<BetSlipProps> = ({
                             <p className="text-[9px] font-black text-green-500 uppercase mb-1">Expert Verdict</p>
                             <p className="text-sm font-black text-slate-100 italic leading-tight">{aiAnalysis.prediction}</p>
                         </div>
+
+                        {/* Narrative Signals (Superstitions) */}
+                        {aiAnalysis.narrativeSignals && aiAnalysis.narrativeSignals.length > 0 && (
+                            <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                                <p className="text-[9px] font-black text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                    <Zap size={10} className="text-orange-500" fill="currentColor" />
+                                    Narrative Signals
+                                </p>
+                                <div className="space-y-3">
+                                    {aiAnalysis.narrativeSignals.map((signal, sIdx) => (
+                                        <div key={sIdx} className="flex gap-3">
+                                            <div className={`mt-0.5 shrink-0 ${signal.impact === 'positive' ? 'text-green-500' :
+                                                signal.impact === 'negative' ? 'text-red-500' :
+                                                    'text-slate-500'
+                                                }`}>
+                                                {signal.impact === 'positive' ? <Zap size={14} fill="currentColor" /> :
+                                                    signal.impact === 'negative' ? <AlertCircle size={14} /> :
+                                                        <Activity size={14} />}
+                                            </div>
+                                            <div>
+                                                <p className={`text-[10px] font-black uppercase italic ${signal.impact === 'positive' ? 'text-green-500' :
+                                                    signal.impact === 'negative' ? 'text-red-500' :
+                                                        'text-slate-100'
+                                                    }`}>
+                                                    {signal.label}
+                                                </p>
+                                                <p className="text-[9px] text-slate-500 leading-tight mt-0.5">{signal.description}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-3 bg-slate-800/20 rounded-xl border border-slate-800">
                                 <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Score</p>

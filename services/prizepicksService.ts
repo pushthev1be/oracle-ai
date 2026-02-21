@@ -5,6 +5,7 @@
  */
 
 import { fetchWithProxy } from "./apiUtils";
+import { getCache, setCache } from "./cacheService";
 
 export interface PrizepicksProjection {
     player: string;
@@ -17,7 +18,7 @@ export interface PrizepicksProjection {
 
 let cachedProjections: PrizepicksProjection[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
 export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection[]> => {
     const isProd = (import.meta as any).env.PROD;
@@ -25,8 +26,18 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
 
     // Return cached data if valid
     const now = Date.now();
+
+    // 1. Check Global Cache
+    const globalCacheKey = "prizepicks_projections";
+    const globalCached = await getCache<PrizepicksProjection[]>(globalCacheKey);
+    if (globalCached) {
+        console.log("Returning global cached PrizePicks projections");
+        return globalCached;
+    }
+
+    // 2. Return local memory cache if valid (for very fast repeat access in same session)
     if (cachedProjections && (now - lastFetchTime < CACHE_DURATION)) {
-        console.log("Returning cached PrizePicks projections");
+        console.log("Returning memory cached PrizePicks projections");
         return cachedProjections;
     }
 
@@ -34,9 +45,7 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
         const targetUrl = "/api/prizepicks/projections";
 
         const headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "application/json",
-            "Connection": "keep-alive"
         };
 
         const response = await fetchWithProxy(targetUrl, { headers });
@@ -80,6 +89,10 @@ export const fetchPrizepicksProjections = async (): Promise<PrizepicksProjection
 
         cachedProjections = projections;
         lastFetchTime = now;
+
+        // Save to Global Cache
+        await setCache(globalCacheKey, projections, { ttl: CACHE_DURATION });
+
         return projections;
     } catch (error) {
         console.error("PrizePicks Scraper Error:", error);

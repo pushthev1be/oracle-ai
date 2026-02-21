@@ -85,6 +85,20 @@ export interface PlayerProp {
   odds?: number;
 }
 
+export interface QuickSlipPick {
+  market: string;
+  selection: string;
+  confidence: number; // 0-100
+  category: 'GOALS' | 'CARDS' | 'PLAYER' | 'HALFTIME' | 'CORNERS' | 'RESULT';
+}
+
+export interface NarrativeSignal {
+  category: 'Momentum' | 'Expectation' | 'Pressure' | 'Fixture' | 'Chaos';
+  label: string;
+  impact: 'positive' | 'negative' | 'neutral';
+  description: string;
+}
+
 export interface AIAnalysis {
   prediction: string;
   scoreline: string;
@@ -93,6 +107,8 @@ export interface AIAnalysis {
   reasoning: string;
   groundingSources: { title: string; uri: string }[];
   playerPropInsights?: string;
+  quickPicks?: QuickSlipPick[];
+  narrativeSignals?: NarrativeSignal[];
 }
 
 export enum SlipStatus {
@@ -104,10 +120,18 @@ export enum SlipStatus {
 export interface PastSlip {
   id: string;
   timestamp: number;
-  match: Match;
-  userPrediction: string;
-  playerProps: PlayerProp[];
-  analysis: AIAnalysis;
+  // Support both single match and batch matches
+  isBatch?: boolean;
+  matches?: {
+    match: Match;
+    analysis: AIAnalysis;
+    playerProps: PlayerProp[];
+  }[];
+  // Keep legacy fields for single slip compatibility or fallback
+  match?: Match;
+  userPrediction?: string;
+  playerProps?: PlayerProp[];
+  analysis?: AIAnalysis;
   status: SlipStatus;
   payout?: number;
 }
