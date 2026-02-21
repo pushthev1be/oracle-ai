@@ -149,11 +149,12 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
        - **ORACLE LEARNING**: Look at the ORACLE MEMORY provided above. If your past prediction for either team was WRONG based on the ACTUAL RESULT, explain why in your reasoning and correct your logic for this new prediction.
        - **NO REPETITION**: Avoid picking the same market (e.g., Over 9.5 Corners) for multiple matches in a batch unless it is an extreme statistical outlier.
        - **UNDER MARKETS**: Actively look for "Clean Sheet" records, "Strong Defensive Form," and "Low xG" trends to justify "Under 2.5 Goals" recommendations.
+    7. ***CONSISTENCY CHECK***: Before outputting, double-check that your [SCORELINE] mathematically supports your [PREDICTION]. If you predict a win, the winning team MUST have more goals in the scoreline.
     
     Format EXACTLY as tags:
     [PREDICTION] Summary verdict and win/draw probability [/PREDICTION]
-    [SCORELINE] 2-1 [/SCORELINE]
-    [SCORERS] Surname1, Surname2 (Cur. Team Verified) [/SCORERS]
+    [SCORELINE] X-Y (***CRITICAL***: If PREDICTION says Home Team wins, X MUST be > Y. If Away wins, Y MUST be > X. If Draw, X MUST = Y.) [/SCORELINE]
+    [SCORERS] Surname1 (TeamName), Surname2 (TeamName) (***CRITICAL***: Verify the player is on the correct team for the current 2026 season.) [/SCORERS]
     [PLAY] Specific suggested betting market [/PLAY]
     [PROP_INSIGHTS] Detailed analysis of user picks [/PROP_INSIGHTS]
     [QUICKPICKS]
