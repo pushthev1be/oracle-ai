@@ -224,9 +224,16 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
         const canUseSearch = usage.count < SEARCH_MAX_PER_PERIOD;
 
         try {
-          // If we can't use search on THIS key, we jump straight to internal fallback to save the model request
+          // If we can't use search on THIS key, we check if we should try another key
           if (!canUseSearch) {
-            console.warn(`[Oracle] Key ${keyIndex + 1} search budget exhausted. Using internal intelligence.`);
+            // If we still have more attempts (other keys to try), we skip this key for search
+            if (attempt < availableKeys.length - 1) {
+              console.log(`[Oracle] Key ${keyIndex + 1} search budget exhausted, trying next key...`);
+              continue;
+            }
+
+            // If we've tried all keys and none have search budget, we MUST fallback here
+            console.warn(`[Oracle] All keys search budget exhausted. Using internal intelligence.`);
             throw new Error("Local search budget exhausted");
           }
 
@@ -247,17 +254,21 @@ export const getAIAnalysis = async (match: Match, userPrediction: string, player
             )
           ]);
         } catch (searchError: any) {
-          const isSearchLimit = searchError.message?.includes('429') || searchError.status === 429;
+          const isSearchLimit = searchError.message?.includes('429') || searchError.status === 429 || searchError.message === "Local search budget exhausted";
 
-          if (isSearchLimit) {
+          if (isSearchLimit && searchError.message !== "Local search budget exhausted") {
             console.warn(`[Oracle] Search limit hit for Key ${keyIndex + 1}. Marking for search cooldown.`);
-            // Mark search as exhausted for this key for this cycle
             usage.count = SEARCH_MAX_PER_PERIOD;
             usage.resetAt = Date.now() + SEARCH_LIMIT_PERIOD;
             searchUsage.set(selectedKey, usage);
           }
 
-          // Simplify prompt for internal fallback to avoid search-related complexity/quota issues
+          // If it's a real 429 and we have more keys, try the next key instead of falling back
+          if (isSearchLimit && searchError.message !== "Local search budget exhausted" && attempt < availableKeys.length - 1) {
+            continue;
+          }
+
+          // FINAL FALLBACK: Internal Intelligence
           const internalPrompt = prompt
             .replace(/1\. Search for the LATEST team news.*/i, "1. Use your internal knowledge for team news.")
             .replace(/Search grounding/i, "Internal analysis");

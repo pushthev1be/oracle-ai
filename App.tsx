@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { getAIAnalysis } from './services/geminiService';
 import { fetchLiveMatches } from './services/liveDataService';
-import { trackEvent, AnalyticsEvents } from './services/analyticsService';
+import { trackEvent, AnalyticsEvents, identifyUser } from './services/analyticsService';
 import { getGlobalLiveStats } from './services/cacheService';
 
 const LOADING_MESSAGES = [
@@ -179,6 +179,7 @@ const App: React.FC = () => {
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
+      identifyUser(parsedUser.username);
       // Check if user has completed onboarding
       const onboardingKey = `oracle_onboarding_completed_${parsedUser.username}`;
       const hasCompletedOnboarding = localStorage.getItem(onboardingKey);
@@ -240,6 +241,7 @@ const App: React.FC = () => {
       if (existingUser.pin === signUpPin) {
         localStorage.setItem('oracle_user', JSON.stringify(existingUser));
         setUser(existingUser);
+        identifyUser(name);
         trackEvent(AnalyticsEvents.AUTH_SUCCESS, { username: name, is_new_user: false });
         setShowSignUp(false);
         setSignUpName('');
@@ -262,6 +264,7 @@ const App: React.FC = () => {
       localStorage.setItem('oracle_global_registry', JSON.stringify(registry));
       localStorage.setItem('oracle_user', JSON.stringify(newUser));
       setUser(newUser);
+      identifyUser(name);
       trackEvent(AnalyticsEvents.AUTH_SUCCESS, { username: name, is_new_user: true });
       setShowSignUp(false);
       setSignUpName('');

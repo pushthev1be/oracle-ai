@@ -10,6 +10,19 @@ export const trackEvent = (eventName: string, params?: Record<string, any>) => {
     }
 };
 
+export const identifyUser = (username: string) => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('set', 'user_properties', {
+            'user_id': username,
+            'oracle_identity': username
+        });
+        (window as any).gtag('config', 'G-XXXXXXXXXX', {
+            'user_id': username
+        });
+        console.log(`[Analytics] Identified User: ${username}`);
+    }
+};
+
 export const AnalyticsEvents = {
     SEARCH_GROUNDED_ANALYSIS: 'deep_scan_triggered',
     QUICKSLIP_ADDED: 'quickslip_match_added',
